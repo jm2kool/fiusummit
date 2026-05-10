@@ -1,0 +1,3317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Future Is Us — Summit</title>
+
+<!-- iOS Add to Home Screen Icon -->
+<link rel="apple-touch-icon" sizes="180x180" href="icon.png">
+
+<!-- PWA Manifest with icon -->
+<link rel="manifest" href="data:application/json,{&quot;name&quot;:&quot;Future Is Us Summit&quot;,&quot;short_name&quot;:&quot;FIU Summit&quot;,&quot;start_url&quot;:&quot;.&quot;,&quot;display&quot;:&quot;standalone&quot;,&quot;background_color&quot;:&quot;%23FFF5EE&quot;,&quot;theme_color&quot;:&quot;%23FFF5EE&quot;,&quot;icons&quot;:[{&quot;src&quot;:&quot;icon.png&quot;,&quot;sizes&quot;:&quot;192x192&quot;,&quot;type&quot;:&quot;image/png&quot;},{&quot;src&quot;:&quot;icon.png&quot;,&quot;sizes&quot;:&quot;512x512&quot;,&quot;type&quot;:&quot;image/png&quot;}]}" />
+
+<meta name="theme-color" content="#FFF5EE" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-title" content="FIU Summit" />
+<meta name="description" content="Future Is Us Annual Summit — Your personalised event companion" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+
+<!-- ============================================================
+     FIREBASE CONFIG — Replace the placeholder values below
+     with your actual Firebase project configuration.
+     ============================================================ -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged,
+           browserLocalPersistence, setPersistence }
+    from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+  import { getFirestore, doc, getDoc, setDoc, addDoc, updateDoc, deleteDoc,
+           collection, getDocs, onSnapshot, serverTimestamp }
+    from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey:            "AIzaSyAWmz9j8u7i7jGVSiGaILv5O9K8gIo0d_M",
+    authDomain:        "fiu26-5b48e.firebaseapp.com",
+    projectId:         "fiu26-5b48e",
+    storageBucket:     "fiu26-5b48e.firebasestorage.app",
+    messagingSenderId: "245845622438",
+    appId:             "1:245845622438:web:7bdcd79755b9a9eb04fe67",
+    measurementId:     "G-EVPWWS05R1"
+  };
+
+  const app  = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db   = getFirestore(app);
+  const provider = new GoogleAuthProvider();
+
+  /* Set persistence to LOCAL so the session survives browser close/reopen */
+  setPersistence(auth, browserLocalPersistence).catch(() => {});
+
+  /* ── Expose to global scope for use in inline scripts ── */
+  window.__FIU__ = { auth, db, provider, signInWithPopup, signOut,
+                     onAuthStateChanged, GoogleAuthProvider,
+                     doc, getDoc, setDoc, addDoc, updateDoc, deleteDoc,
+                     collection, getDocs, onSnapshot, serverTimestamp };
+</script>
+
+<style>
+  :root {
+    --peach:      #FFF5EE;
+    --peach-mid:  #FFE8D6;
+    --peach-deep: #F2C4A8;
+    --ink:        #2A1F1A;
+    --ink-soft:   #6B5248;
+    --gold:       #C9924A;
+    --gold-light: #F0D4A8;
+    --white:      #FFFFFF;
+    --shadow:     0 4px 24px rgba(42,31,26,.10);
+  }
+
+  /* ── Dark Mode ── */
+  body.dark-mode {
+    --peach:      #000000;
+    --peach-mid:  #111111;
+    --peach-deep: #2a2a2a;
+    --ink:        #F0E6DF;
+    --ink-soft:   #A89890;
+    --gold:       #D4A464;
+    --gold-light: #2A1F10;
+    --white:      #0D0D0D;
+    --shadow:     0 4px 24px rgba(0,0,0,.5);
+  }
+  body.dark-mode .top-bar {
+    background: rgba(0,0,0,.95);
+    border-bottom-color: #2a2a2a;
+  }
+  body.dark-mode .bottom-nav {
+    background: rgba(0,0,0,.97);
+    border-top-color: #2a2a2a;
+  }
+  body.dark-mode .user-menu {
+    background: #0D0D0D;
+    border-color: #2a2a2a;
+  }
+  body.dark-mode .google-btn {
+    background: #111111;
+    border-color: #2a2a2a;
+    color: #F0E6DF;
+  }
+  body.dark-mode .google-btn:hover { background: #1a1a1a; }
+  body.dark-mode #splash { background: #000000; }
+  body.dark-mode .modal { background: #0D0D0D; }
+  body.dark-mode .modal-overlay { background: rgba(0,0,0,.7); }
+  body.dark-mode .qr-pass { background: #0D0D0D; border-color: #2a2a2a; }
+  body.dark-mode .qr-wrap { background: #FFFFFF; }
+  body.dark-mode .offline-banner { background: #1a1a1a; }
+  body.dark-mode .nav-item.active { background: #1A1200; }
+  body.dark-mode #qrcode canvas { filter: none; }
+  body.dark-mode .dm-toggle-row { background: #111111; }
+
+  /* ── Dark Mode Toggle Row ── */
+  .dm-toggle-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: .6rem .9rem; border-radius: 8px; margin-bottom: .1rem;
+    font-size: .9rem; color: var(--ink); transition: background .15s;
+  }
+  .dm-toggle-row:hover { background: var(--peach-mid); }
+  .dm-toggle-label { display: flex; align-items: center; gap: .5rem; font-size: .9rem; color: var(--ink); }
+  .dm-switch {
+    position: relative; width: 36px; height: 20px; flex-shrink: 0;
+  }
+  .dm-switch input { opacity: 0; width: 0; height: 0; }
+  .dm-slider {
+    position: absolute; cursor: pointer; inset: 0;
+    background: var(--peach-deep); border-radius: 20px; transition: .3s;
+  }
+  .dm-slider:before {
+    content: ''; position: absolute; width: 14px; height: 14px;
+    left: 3px; top: 3px; background: white; border-radius: 50%; transition: .3s;
+  }
+  .dm-switch input:checked + .dm-slider { background: var(--gold); }
+  .dm-switch input:checked + .dm-slider:before { transform: translateX(16px); }
+
+  /* ── Capacity Badge ── */
+  .capacity-badge {
+    display: inline-flex; align-items: center; gap: .25rem;
+    font-size: .72rem; font-weight: 600; padding: .15rem .55rem;
+    border-radius: 100px; margin-left: .4rem;
+    background: var(--peach-mid); color: var(--ink-soft);
+    border: 1px solid var(--peach-deep);
+  }
+  .capacity-badge.full {
+    background: #FEE2E2; color: #991B1B; border-color: #FECACA;
+  }
+  .capacity-badge.almost-full {
+    background: #FEF3C7; color: #92400E; border-color: #FDE68A;
+  }
+
+  /* ── Add to Homescreen Modal ── */
+  #a2hsOverlay { z-index: 250; }
+  .a2hs-platform-pick { display: flex; gap: .75rem; margin-bottom: 1.25rem; }
+  .a2hs-platform-btn {
+    flex: 1; padding: 1rem .75rem; border-radius: 16px; border: 2px solid var(--peach-deep);
+    background: var(--white); cursor: pointer; text-align: center; transition: all .2s;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .a2hs-platform-btn:hover { border-color: var(--gold); transform: translateY(-2px); box-shadow: var(--shadow); }
+  .a2hs-platform-btn.selected { border-color: var(--gold); background: var(--gold-light); }
+  .a2hs-platform-btn .a2hs-icon { font-size: 2rem; margin-bottom: .4rem; }
+  .a2hs-platform-btn h4 { font-size: .9rem; font-weight: 600; color: var(--ink); }
+  .a2hs-steps { display: none; }
+  .a2hs-steps.visible { display: block; }
+  .a2hs-step {
+    display: flex; align-items: flex-start; gap: .85rem;
+    padding: .85rem; border-radius: 14px; margin-bottom: .6rem;
+    background: var(--peach); border: 1px solid var(--peach-deep);
+  }
+  .a2hs-step-num {
+    width: 26px; height: 26px; border-radius: 50%; background: var(--gold);
+    color: white; font-size: .8rem; font-weight: 700; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .a2hs-step-text { font-size: .85rem; color: var(--ink); line-height: 1.5; }
+  .a2hs-step-text strong { color: var(--gold); font-weight: 600; }
+  .a2hs-ios-version { display: flex; gap: .5rem; margin-bottom: 1rem; }
+  .a2hs-ios-ver-btn {
+    flex: 1; padding: .5rem; border-radius: 10px; border: 1.5px solid var(--peach-deep);
+    background: var(--white); cursor: pointer; font-size: .82rem; font-weight: 500;
+    color: var(--ink-soft); transition: all .2s; font-family: 'DM Sans', sans-serif;
+  }
+  .a2hs-ios-ver-btn.active { border-color: var(--gold); background: var(--gold); color: white; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--peach);
+    color: var(--ink);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+  h1,h2,h3,.serif { font-family: 'Cormorant Garamond', serif; }
+
+  /* ── Splash ── */
+  #splash {
+    position: fixed; inset: 0; z-index: 100;
+    background: var(--peach);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 2rem; padding: 2rem;
+    transition: opacity .5s, transform .5s;
+  }
+  #splash.hidden { opacity: 0; pointer-events: none; transform: translateY(-20px); }
+  .splash-logo { text-align: center; }
+  .splash-logo h1 { font-size: clamp(3rem, 10vw, 5rem); font-weight: 300; letter-spacing: -.02em; line-height: 1; }
+  .splash-logo .tagline { font-size: .9rem; letter-spacing: .3em; text-transform: uppercase; color: var(--ink-soft); margin-top: .5rem; }
+  .divider { width: 60px; height: 1px; background: var(--gold); }
+
+  /* ── Google Button ── */
+  .google-btn {
+    display: flex; align-items: center; gap: .75rem;
+    background: var(--white); color: var(--ink);
+    border: 1.5px solid var(--peach-deep);
+    padding: .85rem 2rem; border-radius: 100px;
+    font-size: .95rem; font-weight: 500;
+    cursor: pointer; transition: all .2s;
+    box-shadow: var(--shadow);
+  }
+  .google-btn:hover { background: var(--peach-mid); transform: translateY(-2px); }
+  .google-btn svg { width: 20px; height: 20px; }
+
+  /* ── App Shell ── */
+  #app { display: none; flex-direction: column; min-height: 100vh; }
+  #app.visible { display: flex; }
+
+  /* ── Top Bar ── */
+  .top-bar {
+    position: sticky; top: 0; z-index: 50;
+    background: rgba(255,245,238,.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--peach-deep);
+    padding: .75rem 1.25rem;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .top-bar .brand { font-family: 'Cormorant Garamond', serif; font-size: 1.4rem; font-weight: 600; letter-spacing: -.01em; }
+  .top-bar .brand span { color: var(--gold); }
+  .top-bar .brand-logo { height: 36px; width: auto; display: block; }
+  .top-bar .brand-logo-light { display: block; }
+  .top-bar .brand-logo-dark  { display: none; }
+  body.dark-mode .top-bar .brand-logo-light { display: none; }
+  body.dark-mode .top-bar .brand-logo-dark  { display: block; }
+  .avatar-btn { display: flex; align-items: center; gap: .5rem; cursor: pointer; background: none; border: none; }
+  .avatar { width: 34px; height: 34px; border-radius: 50%; border: 2px solid var(--peach-deep); object-fit: cover; background: var(--peach-mid); }
+  .settings-btn {
+    display: flex; align-items: center; justify-content: center;
+    width: 34px; height: 34px; border-radius: 50%;
+    border: 2px solid var(--peach-deep); background: var(--white);
+    cursor: pointer; transition: all .2s; color: var(--ink-soft);
+    font-size: 1rem;
+  }
+  .settings-btn:hover { border-color: var(--gold); color: var(--gold); background: var(--gold-light); }
+  .top-bar-right { display: flex; align-items: center; gap: .5rem; position: relative; }
+  .user-menu {
+    position: absolute; top: 44px; right: 0; z-index: 60;
+    background: var(--white); border: 1px solid var(--peach-deep);
+    border-radius: 12px; padding: .5rem; min-width: 200px;
+    box-shadow: var(--shadow); display: none;
+  }
+  .user-menu.open { display: block; }
+  .user-menu button { width: 100%; text-align: left; padding: .6rem .9rem; border-radius: 8px; border: none; background: none; cursor: pointer; font-size: .9rem; color: var(--ink); transition: background .15s; }
+  .user-menu button:hover { background: var(--peach-mid); }
+  .user-menu .admin-btn { color: var(--gold); font-weight: 600; }
+
+  /* ── Content Area ── */
+  .content { flex: 1; overflow-y: auto; padding: 1.25rem; padding-bottom: 90px; }
+
+  /* ── Views ── */
+  .view { display: none; animation: fadeIn .3s ease; }
+  .view.active { display: block; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* ── Bottom Nav ── */
+  .bottom-nav {
+    position: fixed; bottom: 0; left: 0; right: 0; z-index: 50;
+    background: rgba(255,245,238,.95);
+    backdrop-filter: blur(14px);
+    border-top: 1px solid var(--peach-deep);
+    display: flex; justify-content: space-around; align-items: center;
+    padding: .6rem 0 calc(.6rem + env(safe-area-inset-bottom));
+  }
+  .nav-item {
+    display: flex; flex-direction: column; align-items: center; gap: .2rem;
+    cursor: pointer; padding: .3rem .9rem; border-radius: 12px;
+    transition: all .2s; border: none; background: none; color: var(--ink-soft);
+    font-size: .7rem; font-weight: 500; letter-spacing: .02em;
+  }
+  .nav-item svg { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 1.8; }
+  .nav-item.active { color: var(--gold); background: var(--gold-light); }
+  .nav-item.active svg { stroke: var(--gold); }
+
+  /* ── Section Headers ── */
+  .section-head { margin-bottom: 1.25rem; }
+  .section-head h2 { font-size: 2rem; font-weight: 300; }
+  .section-head p { font-size: .85rem; color: var(--ink-soft); margin-top: .2rem; }
+
+  /* ── Speaker Cards ── */
+  .speaker-card {
+    background: var(--white); border-radius: 18px;
+    padding: 1.25rem; margin-bottom: 1rem;
+    box-shadow: var(--shadow); border: 1px solid var(--peach-deep);
+    display: flex; gap: 1rem; align-items: flex-start;
+    transition: transform .2s;
+  }
+  .speaker-card:hover { transform: translateY(-2px); }
+  .speaker-avatar {
+    width: 64px; height: 64px; border-radius: 14px;
+    background: linear-gradient(135deg, var(--peach-deep), var(--gold-light));
+    flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+    font-family: 'Cormorant Garamond', serif; font-size: 1.5rem; font-weight: 600; color: var(--gold);
+  }
+  .speaker-info { flex: 1; }
+  .speaker-info h3 { font-size: 1.05rem; font-weight: 600; }
+  .speaker-info .role { font-size: .8rem; color: var(--gold); font-weight: 500; margin-top: .1rem; }
+  .speaker-info .bio { font-size: .82rem; color: var(--ink-soft); margin-top: .4rem; line-height: 1.5; }
+  .social-links { display: flex; gap: .5rem; margin-top: .6rem; }
+  .social-link {
+    display: flex; align-items: center; gap: .55rem;
+    padding: .55rem 1rem; border-radius: 10px;
+    background: var(--peach-mid); text-decoration: none;
+    color: var(--ink-soft); transition: all .2s; font-size: .82rem; font-weight: 500;
+  }
+  .social-link:hover { background: var(--gold); color: var(--white); transform: translateY(-1px); }
+  .social-link svg { width: 18px; height: 18px; flex-shrink: 0; }
+  .social-links { display: none; flex-direction: column; gap: .45rem; margin-top: .65rem; }
+  .speaker-card.socials-open .social-links { display: flex; }
+  .speaker-more-info-btn {
+    display: inline-flex; align-items: center; gap: .35rem;
+    margin-top: .55rem; padding: .38rem .85rem; border-radius: 100px;
+    border: 1.5px solid var(--peach-deep); background: var(--white);
+    font-size: .78rem; font-weight: 600; color: var(--ink-soft);
+    cursor: pointer; transition: all .2s; font-family: 'DM Sans', sans-serif;
+  }
+  .speaker-more-info-btn:hover, .speaker-card.socials-open .speaker-more-info-btn {
+    border-color: var(--gold); color: var(--gold);
+  }
+
+  /* ── Workshop Cards ── */
+  .workshop-card {
+    background: var(--white); border-radius: 18px;
+    padding: 1.1rem 1.25rem; margin-bottom: .85rem;
+    box-shadow: var(--shadow); border: 1px solid var(--peach-deep);
+    display: flex; align-items: center; gap: 1rem;
+    cursor: pointer; transition: all .2s;
+  }
+  .workshop-card:hover { border-color: var(--gold); }
+  .workshop-card.selected { border-color: var(--gold); background: var(--white); }
+  .workshop-check {
+    width: 26px; height: 26px; border-radius: 50%;
+    border: 2px solid var(--peach-deep); flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    transition: all .2s;
+  }
+  .workshop-card.selected .workshop-check { background: var(--gold); border-color: var(--gold); }
+  .workshop-check svg { width: 14px; height: 14px; stroke: white; fill: none; stroke-width: 2.5; display: none; }
+  .workshop-card.selected .workshop-check svg { display: block; }
+  .workshop-info h3 { font-size: .95rem; font-weight: 600; }
+  .workshop-info .meta { font-size: .78rem; color: var(--ink-soft); margin-top: .15rem; }
+  .badge {
+    display: inline-block; padding: .15rem .55rem; border-radius: 100px;
+    font-size: .7rem; font-weight: 600; letter-spacing: .03em;
+    background: var(--gold-light); color: var(--gold); margin-top: .35rem;
+  }
+
+  /* ── Competition Cards ── */
+  .comp-card {
+    background: var(--white); border-radius: 18px;
+    margin-bottom: .85rem; box-shadow: var(--shadow);
+    border: 1px solid var(--peach-deep); overflow: hidden;
+  }
+  .comp-header {
+    padding: 1.1rem 1.25rem; cursor: pointer;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .comp-header h3 { font-size: 1rem; font-weight: 600; }
+  .comp-header .chevron { transition: transform .3s; color: var(--ink-soft); }
+  .comp-card.open .comp-header .chevron { transform: rotate(180deg); }
+  .comp-body { max-height: 0; overflow: hidden; transition: max-height .35s ease; }
+  .comp-card.open .comp-body { max-height: 400px; }
+  .comp-body-inner { padding: 0 1.25rem 1.25rem; font-size: .85rem; color: var(--ink-soft); line-height: 1.6; border-top: 1px solid var(--peach-mid); padding-top: .85rem; }
+
+  /* ── QR Pass ── */
+  .qr-pass {
+    max-width: 340px; margin: 0 auto; text-align: center;
+    background: var(--white); border-radius: 28px; padding: 2rem;
+    box-shadow: 0 8px 40px rgba(42,31,26,.12);
+    border: 1px solid var(--peach-deep);
+  }
+  .qr-pass h2 { font-size: 1.8rem; font-weight: 300; margin-bottom: .3rem; }
+  .qr-pass .sub { font-size: .8rem; color: var(--ink-soft); letter-spacing: .1em; text-transform: uppercase; margin-bottom: 1.5rem; }
+  .qr-wrap { background: #FFFFFF; border-radius: 16px; padding: 1.25rem; display: inline-block; margin-bottom: 1.25rem; }
+  #qrcode canvas, #qrcode img { border-radius: 8px; }
+  .uid-badge { font-size: .72rem; color: var(--ink-soft); font-family: monospace; background: var(--peach-mid); padding: .3rem .75rem; border-radius: 100px; display: inline-block; }
+
+  /* ── Admin Panel ── */
+  #admin-view { display: none; }
+  #admin-view.active { display: block; }
+  .admin-tabs { display: flex; gap: .5rem; margin-bottom: 1.25rem; overflow-x: auto; padding-bottom: .25rem; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+  .admin-tabs::-webkit-scrollbar { display: none; }
+  .admin-tab {
+    flex-shrink: 0; padding: .45rem 1.1rem; border-radius: 100px;
+    border: 1.5px solid var(--peach-deep); background: var(--white);
+    font-size: .82rem; font-weight: 500; cursor: pointer; transition: all .2s;
+    color: var(--ink-soft);
+  }
+  .admin-tab.active { background: var(--gold); border-color: var(--gold); color: var(--white); }
+  .admin-section { display: none; }
+  .admin-section.active { display: block; }
+
+  /* ── Forms ── */
+  .form-card {
+    background: var(--white); border-radius: 18px;
+    padding: 1.25rem; margin-bottom: 1rem;
+    border: 1px solid var(--peach-deep); box-shadow: var(--shadow);
+  }
+  .form-group { margin-bottom: .85rem; }
+  .form-group label { display: block; font-size: .78rem; font-weight: 600; color: var(--ink-soft); margin-bottom: .35rem; letter-spacing: .04em; text-transform: uppercase; }
+  .form-group input, .form-group textarea, .form-group select {
+    width: 100%; padding: .65rem .9rem; border-radius: 10px;
+    border: 1.5px solid var(--peach-deep); background: var(--peach);
+    font-family: 'DM Sans', sans-serif; font-size: .9rem; color: var(--ink);
+    transition: border-color .2s; outline: none;
+  }
+  .form-group input:focus, .form-group textarea:focus { border-color: var(--gold); background: var(--white); }
+  .form-group textarea { resize: vertical; min-height: 80px; }
+
+  .btn {
+    padding: .65rem 1.4rem; border-radius: 100px; font-size: .88rem;
+    font-weight: 600; cursor: pointer; border: none; transition: all .2s;
+  }
+  .btn-primary { background: var(--gold); color: var(--white); }
+  .btn-primary:hover { background: #b57e3a; transform: translateY(-1px); }
+  .btn-ghost { background: transparent; border: 1.5px solid var(--peach-deep); color: var(--ink-soft); }
+  .btn-ghost:hover { border-color: var(--gold); color: var(--gold); }
+  .btn-danger { background: #fef2f2; color: #dc2626; border: 1.5px solid #fecaca; }
+  .btn-danger:hover { background: #dc2626; color: white; }
+  .btn-sm { padding: .4rem .9rem; font-size: .8rem; }
+
+  /* ── Admin Item Row ── */
+  .admin-item {
+    background: var(--white); border-radius: 14px; padding: 1rem 1.1rem;
+    margin-bottom: .65rem; border: 1px solid var(--peach-deep);
+    display: flex; align-items: center; justify-content: space-between; gap: .75rem;
+  }
+  .admin-item-info { flex: 1; }
+  .admin-item-info h4 { font-size: .92rem; font-weight: 600; }
+  .admin-item-info p { font-size: .78rem; color: var(--ink-soft); margin-top: .15rem; }
+  .admin-item-actions { display: flex; gap: .4rem; }
+
+  /* ── Modal ── */
+  .modal-overlay {
+    position: fixed; inset: 0; z-index: 200;
+    background: rgba(42,31,26,.4); backdrop-filter: blur(4px);
+    display: flex; align-items: flex-end; justify-content: center;
+    opacity: 0; pointer-events: none; transition: opacity .3s;
+  }
+  .modal-overlay.open { opacity: 1; pointer-events: all; }
+  .modal {
+    background: var(--white); border-radius: 28px 28px 0 0;
+    width: 100%; max-width: 540px; max-height: 90vh; overflow-y: auto;
+    padding: 1.75rem 1.5rem calc(1.75rem + env(safe-area-inset-bottom));
+    transform: translateY(100%); transition: transform .35s cubic-bezier(.25,.8,.25,1);
+  }
+  .modal-overlay.open .modal { transform: translateY(0); }
+  .modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem; }
+  .modal-header h3 { font-size: 1.3rem; font-weight: 600; }
+  .modal-close { width: 32px; height: 32px; border-radius: 50%; background: var(--peach-mid); border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--ink-soft); font-size: 1.1rem; }
+
+  /* ── Toast ── */
+  .toast {
+    position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%) translateY(20px);
+    background: var(--ink); color: var(--white); padding: .6rem 1.4rem;
+    border-radius: 100px; font-size: .85rem; font-weight: 500;
+    opacity: 0; transition: all .3s; pointer-events: none; z-index: 300; white-space: nowrap;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  /* ── Loading ── */
+  .loader { display: flex; justify-content: center; padding: 2rem; }
+  .spinner { width: 32px; height: 32px; border: 3px solid var(--peach-deep); border-top-color: var(--gold); border-radius: 50%; animation: spin .7s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ── Skeleton ── */
+  .skeleton { background: linear-gradient(90deg, var(--peach-mid) 25%, var(--peach-deep) 50%, var(--peach-mid) 75%); background-size: 200% 100%; animation: shimmer 1.4s infinite; border-radius: 10px; }
+  @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+  .skel-card { background: var(--white); border-radius: 18px; padding: 1.25rem; margin-bottom: 1rem; border: 1px solid var(--peach-deep); display: flex; gap: 1rem; }
+  .skel-avatar { width: 64px; height: 64px; border-radius: 14px; flex-shrink: 0; }
+  .skel-line { height: 12px; margin-bottom: .5rem; }
+  .skel-line.short { width: 40%; }
+  .skel-line.med { width: 65%; }
+  .skel-line.full { width: 100%; }
+
+  /* ── Empty State ── */
+  .empty { text-align: center; padding: 3rem 1rem; color: var(--ink-soft); }
+  .empty .icon { font-size: 2.5rem; margin-bottom: .5rem; }
+  .empty p { font-size: .9rem; }
+
+  /* ── Search Bar ── */
+  .search-wrap { position: relative; margin-bottom: 1rem; }
+  .search-wrap input {
+    width: 100%; padding: .7rem 1rem .7rem 2.75rem;
+    border-radius: 14px; border: 1.5px solid var(--peach-deep);
+    background: var(--white); font-family: 'DM Sans', sans-serif;
+    font-size: .88rem; color: var(--ink); outline: none; transition: border-color .2s;
+  }
+  .search-wrap input:focus { border-color: var(--gold); }
+  .search-wrap .search-icon { position: absolute; left: .85rem; top: 50%; transform: translateY(-50%); color: var(--ink-soft); pointer-events: none; }
+  .search-wrap .clear-btn { position: absolute; right: .75rem; top: 50%; transform: translateY(-50%); background: var(--peach-mid); border: none; border-radius: 50%; width: 20px; height: 20px; cursor: pointer; color: var(--ink-soft); font-size: .75rem; display: none; align-items: center; justify-content: center; }
+  .search-wrap input:not(:placeholder-shown) ~ .clear-btn { display: flex; }
+
+  /* ── My Schedule Strip ── */
+  .schedule-strip { background: linear-gradient(135deg, var(--gold-light), var(--peach-mid)); border: 1px solid var(--gold); border-radius: 16px; padding: .85rem 1.1rem; margin-bottom: 1rem; display: flex; align-items: center; justify-content: space-between; cursor: pointer; transition: transform .15s; }
+  .schedule-strip:hover { transform: scale(1.01); }
+  .schedule-strip .label { font-size: .82rem; font-weight: 600; color: var(--gold); }
+  .schedule-strip .count { font-size: 1.4rem; font-weight: 700; font-family: 'Cormorant Garamond', serif; color: var(--gold); }
+
+  /* ── Offline Banner ── */
+  .offline-banner { position: fixed; top: 60px; left: 0; right: 0; z-index: 40; background: #1f2937; color: white; text-align: center; font-size: .8rem; padding: .45rem 1rem; transform: translateY(-100%); transition: transform .3s; }
+  .offline-banner.visible { transform: translateY(0); }
+
+  /* ── Speaker bio expand ── */
+  .bio-text { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .speaker-card.expanded .bio-text { display: block; -webkit-line-clamp: unset; }
+  .read-more { font-size: .75rem; color: var(--gold); cursor: pointer; margin-top: .3rem; font-weight: 600; background: none; border: none; padding: 0; font-family: 'DM Sans', sans-serif; }
+
+  /* ── My Schedule modal items ── */
+  .my-schedule-item { background: var(--peach); border-radius: 12px; padding: .8rem 1rem; margin-bottom: .6rem; border-left: 3px solid var(--gold); }
+  .my-schedule-item h4 { font-size: .92rem; font-weight: 600; }
+  .my-schedule-item p  { font-size: .78rem; color: var(--ink-soft); margin-top: .15rem; }
+
+  /* ── Competition extra tags ── */
+  .comp-tag { display: inline-flex; align-items: center; gap: .3rem; font-size: .7rem; font-weight: 600; padding: .18rem .6rem; border-radius: 100px; margin-right: .35rem; margin-top: .35rem; }
+  .comp-tag.open-tag  { background: #D1FAE5; color: #065F46; }
+  .comp-tag.closed-tag{ background: #FEE2E2; color: #991B1B; }
+  .comp-tag.team-tag  { background: var(--gold-light); color: #92400E; }
+
+  /* ── Competition register button ── */
+  .comp-register-btn {
+    display: inline-flex; align-items: center; gap: .4rem;
+    margin-top: .75rem; padding: .45rem 1.1rem; border-radius: 100px;
+    font-size: .8rem; font-weight: 600; border: 1.5px solid var(--gold);
+    background: transparent; color: var(--gold); cursor: pointer;
+    transition: all .2s; font-family: 'DM Sans', sans-serif;
+  }
+  .comp-register-btn:hover, .comp-register-btn.registered { background: var(--gold); color: var(--white); }
+  .comp-register-btn.registered { border-color: var(--gold); }
+
+  /* ── Role badge ── */
+  .role-pill { display: inline-block; padding: .2rem .7rem; border-radius: 100px; font-size: .7rem; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; }
+  .role-pill.admin { background: #FEF3C7; color: #B45309; }
+  .role-pill.attendee { background: var(--gold-light); color: var(--gold); }
+  .role-pill.volunteer { background: #E0E7FF; color: #4338CA; }
+
+  /* ── QR Lock / Blur ── */
+  .qr-blur-wrap { position: relative; display: inline-block; }
+  .qr-blur-wrap.locked #qrcode { filter: blur(10px); pointer-events: none; user-select: none; }
+  .qr-lock-overlay {
+    position: absolute; inset: 0; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: .6rem;
+    border-radius: 16px;
+  }
+  .unlock-btn {
+    display: flex; align-items: center; gap: .5rem;
+    background: var(--gold); color: var(--white);
+    border: none; border-radius: 100px;
+    padding: .65rem 1.6rem; font-size: .9rem; font-weight: 600;
+    cursor: pointer; box-shadow: 0 4px 16px rgba(201,146,74,.4);
+    transition: all .2s; font-family: 'DM Sans', sans-serif;
+  }
+  .unlock-btn:hover { background: #b57e3a; transform: translateY(-2px); }
+
+  /* ── Payment Option Cards ── */
+  .pay-option {
+    background: var(--white); border: 2px solid var(--peach-deep);
+    border-radius: 18px; padding: 1.25rem; cursor: pointer;
+    transition: all .2s; text-align: center; margin-bottom: .75rem;
+  }
+  .pay-option:hover { border-color: var(--gold); transform: translateY(-2px); box-shadow: var(--shadow); }
+  .pay-option .pay-icon { font-size: 2rem; margin-bottom: .5rem; }
+  .pay-option h4 { font-size: 1rem; font-weight: 600; margin-bottom: .25rem; }
+  .pay-option p  { font-size: .8rem; color: var(--ink-soft); line-height: 1.45; }
+
+  /* ── Waiting approval banner ── */
+  .waiting-banner {
+    background: linear-gradient(135deg, #FEF9EC, #FFF5EE);
+    border: 1.5px solid var(--gold-light); border-radius: 18px;
+    padding: 1.5rem; text-align: center; margin-bottom: 1rem;
+  }
+  .waiting-banner .pulse-dot {
+    width: 12px; height: 12px; border-radius: 50%;
+    background: var(--gold); display: inline-block;
+    animation: pulse 1.4s infinite;
+  }
+  @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.5;transform:scale(.8)} }
+  .waiting-banner h3 { font-size: 1.1rem; font-weight: 600; margin: .75rem 0 .3rem; color: var(--ink); }
+  .waiting-banner p  { font-size: .82rem; color: var(--ink-soft); line-height: 1.5; }
+
+  /* ── Admin Payment Requests ── */
+  .pay-req-card {
+    background: var(--white); border-radius: 14px; padding: 1rem 1.1rem;
+    margin-bottom: .65rem; border: 1px solid var(--peach-deep);
+    box-shadow: var(--shadow);
+  }
+  .pay-req-card h4 { font-size: .92rem; font-weight: 600; }
+  .pay-req-card .meta { font-size: .78rem; color: var(--ink-soft); margin-top: .2rem; line-height: 1.5; }
+  .pay-req-card .actions { display: flex; gap: .5rem; margin-top: .75rem; }
+  .btn-approve { background: #D1FAE5; color: #065F46; border: 1.5px solid #6EE7B7; }
+  .btn-approve:hover { background: #065F46; color: white; }
+  .btn-reject  { background: #FEE2E2; color: #991B1B; border: 1.5px solid #FECACA; }
+  .btn-reject:hover  { background: #991B1B; color: white; }
+
+  /* ── Payment Modal overlay ── */
+  #paymentOverlay .modal { max-height: 80vh; }
+
+  /* ── Super Admin Panel ── */
+  #superAdminOverlay .modal { max-height: 90vh; border-radius: 28px 28px 0 0; }
+
+  /* ── Made with love footer ── */
+  .made-by {
+    display: flex; align-items: center; justify-content: center; gap: .45rem;
+    font-size: .88rem; color: var(--ink-soft); margin-top: 1.5rem;
+    padding-bottom: .75rem; font-family: 'DM Sans', sans-serif;
+  }
+  .made-by a { color: var(--ink-soft); text-decoration: none; display: flex; align-items: center; gap: .35rem; transition: color .2s; }
+  .made-by a:hover { color: var(--gold); }
+  .made-by svg { width: 18px; height: 18px; }
+  .super-admin-header {
+    background: linear-gradient(135deg, #7C3AED, #5B21B6);
+    color: white; border-radius: 12px; padding: .85rem 1.1rem;
+    margin-bottom: 1rem; display: flex; align-items: center; gap: .75rem;
+  }
+  .super-admin-header .icon { font-size: 1.4rem; }
+  .super-admin-header p { font-size: .8rem; opacity: .85; margin-top: .15rem; }
+
+
+
+  /* ── 3-dots kebab menu ── */
+  .kebab-wrap { position: relative; display: inline-block; }
+  .kebab-btn {
+    background: none; border: none; cursor: pointer;
+    padding: .3rem .45rem; border-radius: 8px; color: var(--ink-soft);
+    font-size: 1.1rem; line-height: 1; transition: background .15s;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .kebab-btn:hover { background: var(--peach-mid); }
+  .kebab-menu {
+    position: absolute; right: 0; top: 110%; z-index: 100;
+    background: var(--white); border: 1px solid var(--peach-deep);
+    border-radius: 12px; padding: .35rem; min-width: 130px;
+    box-shadow: var(--shadow); display: none;
+  }
+  .kebab-menu.open { display: block; }
+  .kebab-menu button {
+    width: 100%; text-align: left; padding: .5rem .75rem;
+    border-radius: 8px; border: none; background: none;
+    cursor: pointer; font-size: .85rem; color: var(--ink);
+    transition: background .15s; font-family: 'DM Sans', sans-serif;
+  }
+  .kebab-menu button:hover { background: var(--peach-mid); }
+
+  /* ── Info Popup Modal ── */
+  #infoPopupOverlay .modal { max-height: 85vh; }
+  .info-popup-gdoc-btn {
+    display: block; width: 100%; padding: .7rem 1rem;
+    background: var(--gold); color: white; border: none; border-radius: 12px;
+    font-size: .9rem; font-weight: 600; cursor: pointer; text-align: center;
+    text-decoration: none; font-family: 'DM Sans', sans-serif; transition: background .2s;
+  }
+  .info-popup-gdoc-btn:hover { background: #b57e3a; }
+  .info-popup-row { display: flex; gap: .5rem; align-items: flex-start; font-size: .85rem; color: var(--ink); margin-bottom: .5rem; }
+  .info-popup-row .info-label { color: var(--ink-soft); font-weight: 600; font-size: .75rem; text-transform: uppercase; letter-spacing: .04em; min-width: 70px; padding-top: .1rem; }
+
+  /* ── jm link highlight ── */
+  .jm-link {
+    color: var(--gold) !important;
+    text-decoration: underline !important;
+    font-weight: 600;
+  }
+
+  /* ── Super Admin name search result list ── */
+  .sa-user-result-item {
+    padding: .75rem 1rem; border-radius: 10px; border: 1.5px solid var(--peach-deep);
+    background: var(--white); margin-bottom: .5rem; cursor: pointer;
+    transition: border-color .15s;
+  }
+  .sa-user-result-item:hover { border-color: var(--gold); }
+  .sa-user-result-item h4 { font-size: .9rem; font-weight: 600; }
+  .sa-user-result-item p { font-size: .78rem; color: var(--ink-soft); margin-top: .1rem; }
+
+  /* ── Colour Picker UI ── */
+  .colour-picker-wrap {
+    margin-top: .75rem; padding: .85rem; border-radius: 14px;
+    background: var(--peach); border: 1px solid var(--peach-deep);
+  }
+  .colour-picker-label {
+    font-size: .75rem; font-weight: 700; color: var(--ink-soft);
+    text-transform: uppercase; letter-spacing: .05em; margin-bottom: .6rem;
+  }
+  .colour-swatches {
+    display: flex; flex-wrap: wrap; gap: .45rem; margin-bottom: .65rem;
+  }
+  .colour-swatch {
+    width: 28px; height: 28px; border-radius: 8px; cursor: pointer;
+    border: 2.5px solid transparent; transition: transform .15s, border-color .15s;
+    flex-shrink: 0;
+  }
+  .colour-swatch:hover { transform: scale(1.15); }
+  .colour-swatch.active { border-color: var(--ink); transform: scale(1.1); }
+  .colour-hex-row {
+    display: flex; align-items: center; gap: .5rem;
+  }
+  .colour-hex-input {
+    flex: 1; padding: .45rem .75rem; border-radius: 10px;
+    border: 1.5px solid var(--peach-deep); background: var(--white);
+    font-family: 'DM Sans', sans-serif; font-size: .83rem; color: var(--ink);
+    outline: none; transition: border-color .2s;
+  }
+  .colour-hex-input:focus { border-color: var(--gold); }
+  .colour-hex-preview {
+    width: 32px; height: 32px; border-radius: 8px; flex-shrink: 0;
+    border: 1.5px solid var(--peach-deep);
+  }
+  .colour-picker-native {
+    width: 32px; height: 32px; border-radius: 8px; border: 1.5px solid var(--peach-deep);
+    cursor: pointer; padding: 2px; background: var(--white);
+  }
+
+  /* ── Workshop / Competition gradient wrap ── */
+  .item-coloured-wrap {
+    border-radius: 18px; padding: 2px; margin-bottom: .85rem;
+    transition: background .4s;
+  }
+  .item-coloured-wrap > .workshop-card,
+  .item-coloured-wrap > .comp-card {
+    margin-bottom: 0;
+  }
+
+  /* ── On Spot admin section ── */
+  #admin-onspot .onspot-count-badge {
+    display: inline-flex; align-items: center; gap: .4rem;
+    background: linear-gradient(135deg,#FEF3C7,#FFF5EE);
+    border: 1.5px solid var(--gold-light); border-radius: 100px;
+    padding: .35rem .9rem; font-size: .82rem; font-weight: 700;
+    color: #B45309; margin-bottom: 1rem;
+  }
+  .onspot-user-card {
+    background: var(--white); border-radius: 18px;
+    padding: 1rem 1.1rem; margin-bottom: .7rem;
+    border: 1px solid var(--peach-deep); box-shadow: var(--shadow);
+    display: flex; align-items: center; gap: .85rem;
+  }
+  .onspot-user-avatar {
+    width: 46px; height: 46px; border-radius: 12px;
+    object-fit: cover; flex-shrink: 0;
+    background: linear-gradient(135deg,var(--peach-deep),var(--gold-light));
+  }
+  .onspot-user-initials {
+    width: 46px; height: 46px; border-radius: 12px; flex-shrink: 0;
+    background: linear-gradient(135deg,var(--peach-deep),var(--gold-light));
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Cormorant Garamond', serif; font-size: 1.1rem;
+    font-weight: 600; color: var(--gold);
+  }
+  .onspot-user-info h4 { font-size: .9rem; font-weight: 600; }
+  .onspot-user-info p { font-size: .76rem; color: var(--ink-soft); margin-top: .1rem; }
+
+  /* ── Maintenance Overlay ── */
+  .maintenance-overlay {
+    display: none;
+    position: absolute; inset: 0; z-index: 40;
+    backdrop-filter: blur(18px) saturate(0.4);
+    -webkit-backdrop-filter: blur(18px) saturate(0.4);
+    background: rgba(255, 245, 238, 0.72);
+    flex-direction: column; align-items: center; justify-content: center;
+    text-align: center; padding: 2.5rem 2rem;
+    pointer-events: all;
+  }
+  body.dark-mode .maintenance-overlay {
+    background: rgba(0, 0, 0, 0.78);
+  }
+  .maintenance-overlay.active { display: flex; }
+  .maintenance-icon { font-size: 3rem; margin-bottom: 1rem; animation: spin-slow 6s linear infinite; }
+  @keyframes spin-slow { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+  .maintenance-overlay h2 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.6rem; font-weight: 600; color: var(--ink);
+    margin-bottom: .5rem; line-height: 1.25;
+  }
+  .maintenance-overlay p {
+    font-size: .85rem; color: var(--ink-soft); line-height: 1.6; max-width: 260px;
+  }
+
+  /* ── Lock Banner ── */
+  .lock-banner {
+    display: flex; align-items: center; gap: .6rem;
+    background: linear-gradient(135deg, #EDE9FE, #F5F3FF);
+    border: 1.5px solid #C4B5FD; border-radius: 14px;
+    padding: .8rem 1rem; margin-bottom: 1rem;
+    font-size: .83rem; font-weight: 600; color: #5B21B6;
+  }
+  .lock-banner .lock-icon { font-size: 1.1rem; flex-shrink: 0; }
+
+  /* ── Inline error toast on card ── */
+  .card-error-msg {
+    display: none; align-items: center; gap: .4rem;
+    margin-top: .5rem; padding: .45rem .75rem;
+    background: #FEE2E2; border: 1.5px solid #FECACA;
+    border-radius: 10px; font-size: .78rem; font-weight: 600; color: #991B1B;
+  }
+  .card-error-msg.visible { display: flex; }
+
+  /* ── WhatsApp Group Button ── */
+  .whatsapp-btn {
+    display: flex; align-items: center; justify-content: center; gap: .55rem;
+    width: 100%; padding: .75rem 1.5rem; border-radius: 100px;
+    background: #25D366; color: #ffffff;
+    border: none; font-size: .95rem; font-weight: 600;
+    cursor: pointer; font-family: 'DM Sans', sans-serif;
+    box-shadow: 0 4px 16px rgba(37,211,102,.35);
+    transition: all .2s; margin-top: .85rem;
+  }
+  .whatsapp-btn:hover { background: #1ebe5d; transform: translateY(-2px); box-shadow: 0 6px 20px rgba(37,211,102,.45); }
+  .whatsapp-btn svg { width: 20px; height: 20px; flex-shrink: 0; }
+
+  /* ── Pay in Advance from QR page ── */
+  .pay-advance-qr-btn {
+    display: flex; align-items: center; justify-content: center; gap: .6rem;
+    margin-top: 1rem; padding: .9rem 1.6rem; border-radius: 100px;
+    background: var(--gold); color: var(--white);
+    border: none; font-size: 1rem; font-weight: 700;
+    cursor: pointer; font-family: 'DM Sans', sans-serif;
+    transition: all .2s; width: 100%;
+    box-shadow: 0 4px 18px rgba(201,146,74,.45);
+    letter-spacing: .01em;
+  }
+  .pay-advance-qr-btn:hover { background: #b57e3a; transform: translateY(-2px); box-shadow: 0 6px 24px rgba(201,146,74,.55); }
+
+  /* ── Day Schedule Page ── */
+  .schedule-page-header { margin-bottom: 1.5rem; }
+  .schedule-page-header h2 { font-size: 2rem; font-weight: 300; }
+  .schedule-page-header p { font-size: .85rem; color: var(--ink-soft); margin-top: .2rem; }
+
+  .schedule-timeline { position: relative; padding-left: 0; }
+
+  .schedule-slot {
+    display: flex; gap: .9rem; margin-bottom: 1rem; align-items: flex-start;
+  }
+  .schedule-slot-time {
+    flex-shrink: 0; width: 58px; text-align: right;
+    font-size: .72rem; font-weight: 700; color: var(--ink-soft);
+    letter-spacing: .02em; padding-top: .85rem; line-height: 1.2;
+  }
+  .schedule-slot-line {
+    display: flex; flex-direction: column; align-items: center; flex-shrink: 0;
+    padding-top: .65rem;
+  }
+  .schedule-dot {
+    width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0;
+    border: 2px solid var(--peach-deep); background: var(--white);
+  }
+  .schedule-dot.cat-speaker     { background: #8B5CF6; border-color: #8B5CF6; }
+  .schedule-dot.cat-workshop    { background: #3B82F6; border-color: #3B82F6; }
+  .schedule-dot.cat-competition { background: #EF4444; border-color: #EF4444; }
+  .schedule-dot.cat-lunch       { background: #10B981; border-color: #10B981; }
+  .schedule-dot.cat-break       { background: #F59E0B; border-color: #F59E0B; }
+  .schedule-dot.cat-ceremony    { background: #EC4899; border-color: #EC4899; }
+  .schedule-dot.cat-networking  { background: #06B6D4; border-color: #06B6D4; }
+  .schedule-dot.cat-general     { background: var(--gold); border-color: var(--gold); }
+  .schedule-line-seg {
+    width: 2px; flex: 1; min-height: 20px;
+    background: var(--peach-deep); margin-top: 3px;
+  }
+  .schedule-card {
+    flex: 1; background: var(--white); border-radius: 14px;
+    padding: .85rem 1rem; border: 1px solid var(--peach-deep);
+    box-shadow: var(--shadow); margin-bottom: 0;
+    transition: transform .2s;
+  }
+  .schedule-card:hover { transform: translateY(-1px); }
+  .schedule-card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: .5rem; }
+  .schedule-card h4 { font-size: .92rem; font-weight: 600; line-height: 1.3; }
+  .schedule-card .sc-desc { font-size: .78rem; color: var(--ink-soft); margin-top: .3rem; line-height: 1.4; }
+  .schedule-cat-pill {
+    display: inline-flex; align-items: center; gap: .25rem;
+    font-size: .65rem; font-weight: 700; padding: .18rem .55rem;
+    border-radius: 100px; white-space: nowrap; flex-shrink: 0;
+    text-transform: uppercase; letter-spacing: .04em;
+  }
+  .cat-pill-speaker     { background: #EDE9FE; color: #5B21B6; }
+  .cat-pill-workshop    { background: #DBEAFE; color: #1D4ED8; }
+  .cat-pill-competition { background: #FEE2E2; color: #991B1B; }
+  .cat-pill-lunch       { background: #D1FAE5; color: #065F46; }
+  .cat-pill-break       { background: #FEF3C7; color: #92400E; }
+  .cat-pill-ceremony    { background: #FCE7F3; color: #9D174D; }
+  .cat-pill-networking  { background: #CFFAFE; color: #155E75; }
+  .cat-pill-general     { background: var(--gold-light); color: #92400E; }
+
+  /* ── Schedule Admin Tab ── */
+  .sched-admin-card {
+    background: var(--white); border-radius: 14px; padding: .9rem 1rem;
+    margin-bottom: .6rem; border: 1px solid var(--peach-deep);
+    box-shadow: var(--shadow); display: flex; align-items: center; gap: .75rem;
+  }
+  .sched-admin-card .sac-info { flex: 1; }
+  .sched-admin-card .sac-info h4 { font-size: .9rem; font-weight: 600; }
+  .sched-admin-card .sac-info p { font-size: .75rem; color: var(--ink-soft); margin-top: .15rem; }
+
+  /* Dark mode overrides for schedule */
+  body.dark-mode .schedule-card { background: #111111; border-color: #2a2a2a; }
+  body.dark-mode .schedule-dot  { background: #111111; }
+  body.dark-mode .sched-admin-card { background: #111111; border-color: #2a2a2a; }
+</style>
+</head>
+<body>
+
+<!-- Offline Banner -->
+<div class="offline-banner" id="offlineBanner">⚡ You're offline — showing cached data</div>
+
+
+
+<!-- ════════════════ SPLASH ════════════════ -->
+<div id="splash">
+  <div class="splash-logo">
+    <h1 class="serif">Future<br>Is Us</h1>
+    <p class="tagline">Annual Summit · 2026</p>
+  </div>
+  <div class="divider"></div>
+  <button class="google-btn" id="loginBtn">
+    <svg viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.35-8.16 2.35-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/><path fill="none" d="M0 0h48v48H0z"/></svg>
+    Continue with Google
+  </button>
+  <p style="font-size:.78rem;color:var(--ink-soft);text-align:center;max-width:240px;">Sign in to access your personalised summit experience</p>
+  <div class="made-by">
+    made with love by
+    <a href="https://instagram.com/jash_malhotraa" target="_blank" rel="noopener">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><circle cx="12" cy="12" r="5"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>
+      <span class="jm-link">jm</span>
+    </a>
+  </div>
+</div>
+
+<!-- ════════════════ APP SHELL ════════════════ -->
+<div id="app">
+
+  <!-- Top Bar -->
+  <header class="top-bar">
+    <div class="brand">
+      <img class="brand-logo brand-logo-light" src="lighticon.png" alt="FIU Logo" />
+      <img class="brand-logo brand-logo-dark"  src="darkicon.png"  alt="FIU Logo" />
+    </div>
+    <div class="top-bar-right">
+      <button class="avatar-btn" id="avatarBtn" style="cursor:default;pointer-events:none;">
+        <img id="userAvatar" class="avatar" src="" alt="Avatar" />
+      </button>
+      <button class="settings-btn" id="waTopBtn" title="WhatsApp Group" aria-label="WhatsApp Group" onclick="window.open('https://chat.whatsapp.com/KbJqfTsrwbuGyL67KpB97v','_blank')" style="background:#25D366;border-color:#25D366;color:#ffffff;">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+      </button>
+      <button class="settings-btn" id="settingsBtn" title="Settings" aria-label="Settings">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      </button>
+      <div class="user-menu" id="userMenu">
+        <div style="padding:.5rem .9rem .4rem;border-bottom:1px solid var(--peach-mid);margin-bottom:.3rem;">
+          <div id="menuName" style="font-weight:600;font-size:.9rem;"></div>
+          <div id="menuEmail" style="font-size:.75rem;color:var(--ink-soft);"></div>
+          <div style="margin-top:.35rem"><span id="menuRole" class="role-pill"></span></div>
+        </div>
+        <button class="admin-btn" id="adminPanelBtn" style="display:none">&#9881; Admin Panel</button>
+        <button class="admin-btn" id="superAdminBtn" style="display:none;color:#7C3AED">&#9889; Super Admin</button>
+        <div class="dm-toggle-row">
+          <span class="dm-toggle-label"><span id="dmIcon">&#127769;</span> Dark Mode</span>
+          <label class="dm-switch">
+            <input type="checkbox" id="darkModeToggle" onchange="handleDarkModeToggle(this.checked)" />
+            <span class="dm-slider"></span>
+          </label>
+        </div>
+        <button id="a2hsMenuBtn" onclick="openA2HS();toggleMenu(false)" style="width:100%;text-align:left;padding:.6rem .9rem;border-radius:8px;border:none;background:none;cursor:pointer;font-size:.9rem;color:var(--ink);transition:background .15s;" onmouseenter="this.style.background='var(--peach-mid)'" onmouseleave="this.style.background='none'">&#128242; Add to Homescreen</button>
+        <button id="logoutBtn">Sign Out</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Content -->
+  <main class="content">
+
+    <!-- SPEAKERS VIEW -->
+    <div class="view active" id="view-speakers" style="position:relative">
+      <div class="maintenance-overlay" id="maint-speakers">
+        <div class="maintenance-icon">⚙️</div>
+        <h2>Under Maintenance</h2>
+        <p>Site is under maintenance, please try again later.</p>
+      </div>
+      <div class="section-head">
+        <h2 class="serif">Speakers</h2>
+        <p>Visionaries shaping tomorrow</p>
+      </div>
+      <div class="search-wrap">
+        <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" id="speaker-search" placeholder="Search speakers…" oninput="filterSpeakers(this.value)" />
+        <button class="clear-btn" onclick="document.getElementById('speaker-search').value='';filterSpeakers('')">✕</button>
+      </div>
+      <div id="speakers-list"><div class="loader"><div class="spinner"></div></div></div>
+      <div class="made-by">made with love by <a href="https://instagram.com/jash_malhotraa" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><circle cx="12" cy="12" r="5"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg><span class="jm-link">jm</span></a></div>
+    </div>
+
+    <!-- WORKSHOPS VIEW -->
+    <div class="view" id="view-workshops" style="position:relative">
+      <div class="maintenance-overlay" id="maint-workshops">
+        <div class="maintenance-icon">⚙️</div>
+        <h2>Under Maintenance</h2>
+        <p>Site is under maintenance, please try again later.</p>
+      </div>
+      <div class="section-head">
+        <h2 class="serif">Workshops</h2>
+        <p>Choose 1 session to attend</p>
+      </div>
+      <div id="ws-lock-banner" class="lock-banner" style="display:none">
+        <span class="lock-icon">🔒</span>
+        <span>Selections are locked. Only your chosen workshop is shown.</span>
+      </div>
+      <div class="schedule-strip" onclick="openMySchedule()">
+        <div>
+          <div class="label">📋 My Schedule</div>
+          <div style="font-size:.75rem;color:var(--ink-soft);margin-top:.1rem">Tap to view selected sessions</div>
+        </div>
+        <div class="count" id="schedule-count">0</div>
+      </div>
+      <div id="ws-search-wrap" class="search-wrap">
+        <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" id="workshop-search" placeholder="Search workshops…" oninput="filterWorkshops(this.value)" />
+        <button class="clear-btn" onclick="document.getElementById('workshop-search').value='';filterWorkshops('')">✕</button>
+      </div>
+      <div id="workshops-list"><div class="loader"><div class="spinner"></div></div></div>
+      <div class="made-by">made with love by <a href="https://instagram.com/jash_malhotraa" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><circle cx="12" cy="12" r="5"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg><span class="jm-link">jm</span></a></div>
+    </div>
+
+    <!-- COMPETITIONS VIEW -->
+    <div class="view" id="view-competitions" style="position:relative">
+      <div class="maintenance-overlay" id="maint-competitions">
+        <div class="maintenance-icon">⚙️</div>
+        <h2>Under Maintenance</h2>
+        <p>Site is under maintenance, please try again later.</p>
+      </div>
+      <div class="section-head">
+        <h2 class="serif">Competitions</h2>
+        <p>Choose 1 competition to register for</p>
+      </div>
+      <div id="comp-lock-banner" class="lock-banner" style="display:none">
+        <span class="lock-icon">🔒</span>
+        <span>Selections are locked. Only your chosen competition is shown.</span>
+      </div>
+      <div id="comp-search-wrap" class="search-wrap">
+        <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" id="comp-search" placeholder="Search competitions…" oninput="filterCompetitions(this.value)" />
+        <button class="clear-btn" onclick="document.getElementById('comp-search').value='';filterCompetitions('')">✕</button>
+      </div>
+      <div id="competitions-list"><div class="loader"><div class="spinner"></div></div></div>
+      <div class="made-by">made with love by <a href="https://instagram.com/jash_malhotraa" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><circle cx="12" cy="12" r="5"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg><span class="jm-link">jm</span></a></div>
+    </div>
+
+    <!-- QR PASS VIEW -->
+    <div class="view" id="view-qr">
+      <div style="padding-top:1rem">
+        <div class="qr-pass">
+          <h2 class="serif">My Pass</h2>
+          <p class="sub">Event Check-In QR</p>
+
+          <!-- Waiting for approval banner (hidden by default) -->
+          <div class="waiting-banner" id="waitingBanner" style="display:none">
+            <div class="pulse-dot"></div>
+            <h3>Waiting for Approval</h3>
+            <p>Your payment proof has been submitted.<br>An email will be sent to your Google account once approved.</p>
+          </div>
+
+          <!-- Pay in Advance button — shown only when paid = 'onSpot' -->
+          <div id="payAdvanceQrWrap" style="display:none;margin-bottom:.85rem;">
+            <button class="pay-advance-qr-btn" onclick="openPayAdvanceFromQR()">🏦 Pay in Advance</button>
+          </div>
+
+          <div class="qr-wrap">
+            <div class="qr-blur-wrap locked" id="qrBlurWrap">
+              <div id="qrcode"></div>
+              <div class="qr-lock-overlay" id="qrLockOverlay">
+                <button class="unlock-btn" onclick="openPaymentModal()">
+                  🔒 Register now to unlock QR code
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div id="qrName" style="font-weight:600;font-size:1rem;margin-bottom:.3rem;"></div>
+          <div class="uid-badge" id="qrUID"></div>
+          <p style="font-size:.75rem;color:var(--ink-soft);margin-top:1rem;line-height:1.5;">Present this QR code at the registration desk for seamless check-in.</p>
+
+
+        </div>
+      </div>
+      <div class="made-by">made with love by <a href="https://instagram.com/jash_malhotraa" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><circle cx="12" cy="12" r="5"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg><span class="jm-link">jm</span></a></div>
+    </div>
+
+    <!-- SCHEDULE VIEW -->
+    <div class="view" id="view-schedule" style="position:relative">
+      <div class="maintenance-overlay" id="maint-schedule">
+        <div class="maintenance-icon">⚙️</div>
+        <h2>Under Maintenance</h2>
+        <p>Site is under maintenance, please try again later.</p>
+      </div>
+      <div class="schedule-page-header">
+        <h2 class="serif">Day Schedule</h2>
+        <p>Full programme for the summit</p>
+      </div>
+      <div id="schedule-day-list"><div class="loader"><div class="spinner"></div></div></div>
+      <div class="made-by">made with love by <a href="https://instagram.com/jash_malhotraa" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><circle cx="12" cy="12" r="5"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg><span class="jm-link">jm</span></a></div>
+    </div>
+
+    <!-- ADMIN VIEW -->
+    <div class="view" id="admin-view">
+      <div class="section-head">
+        <h2 class="serif">Admin Panel</h2>
+        <p>Manage summit content</p>
+      </div>
+      <div class="admin-tabs">
+        <button class="admin-tab active" data-admin-tab="speakers">Speakers</button>
+        <button class="admin-tab" data-admin-tab="workshops">Workshops</button>
+        <button class="admin-tab" data-admin-tab="competitions">Competitions</button>
+        <button class="admin-tab" data-admin-tab="schedule">Schedule</button>
+        <button class="admin-tab" data-admin-tab="approvals">Approvals</button>
+        <button class="admin-tab" data-admin-tab="onspot">On Spot</button>
+      </div>
+
+      <!-- Admin: Speakers -->
+      <div class="admin-section active" id="admin-speakers">
+        <button class="btn btn-primary" style="margin-bottom:1rem;width:100%" onclick="openModal('speaker')">+ Add Speaker</button>
+        <div id="admin-speakers-list"></div>
+      </div>
+
+      <!-- Admin: Workshops -->
+      <div class="admin-section" id="admin-workshops">
+        <button class="btn btn-primary" style="margin-bottom:1rem;width:100%" onclick="openModal('workshop')">+ Add Workshop</button>
+        <div id="admin-workshops-list"></div>
+      </div>
+
+      <!-- Admin: Competitions -->
+      <div class="admin-section" id="admin-competitions">
+        <button class="btn btn-primary" style="margin-bottom:1rem;width:100%" onclick="openModal('competition')">+ Add Competition</button>
+        <div id="admin-competitions-list"></div>
+      </div>
+
+      <!-- Admin: Schedule -->
+      <div class="admin-section" id="admin-schedule">
+        <button class="btn btn-primary" style="margin-bottom:1rem;width:100%" onclick="openScheduleItemModal()">+ Add Schedule Item</button>
+        <div id="admin-schedule-list"><div class="loader"><div class="spinner"></div></div></div>
+      </div>
+
+      <!-- Admin: Approvals -->
+      <div class="admin-section" id="admin-approvals">
+        <div class="section-head" style="margin-bottom:.75rem">
+          <p style="font-size:.82rem;color:var(--ink-soft)">Users waiting for payment approval</p>
+        </div>
+        <div id="admin-approvals-list"><div class="loader"><div class="spinner"></div></div></div>
+      </div>
+
+      <!-- Admin: On Spot -->
+      <div class="admin-section" id="admin-onspot">
+        <div class="section-head" style="margin-bottom:.75rem">
+          <p style="font-size:.82rem;color:var(--ink-soft)">Users who chose to pay on the spot</p>
+        </div>
+        <div id="admin-onspot-count" class="onspot-count-badge" style="display:none">
+          <span>💵</span> <span id="onspot-count-num">0</span> on-spot attendees
+        </div>
+        <div id="admin-onspot-list"><div class="loader"><div class="spinner"></div></div></div>
+      </div>
+
+      <div class="made-by">made with love by <a href="https://instagram.com/jash_malhotraa" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><circle cx="12" cy="12" r="5"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg><span class="jm-link">jm</span></a></div>
+    </div>
+
+  </main>
+
+  <!-- Bottom Nav (hidden in admin view) -->
+  <nav class="bottom-nav" id="bottomNav">
+    <button class="nav-item active" data-tab="speakers">
+      <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      Speakers
+    </button>
+    <button class="nav-item" data-tab="workshops">
+      <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      Workshops
+    </button>
+    <button class="nav-item" data-tab="competitions">
+      <svg viewBox="0 0 24 24"><polyline points="14.5 17.5 3 6 3 3 6 3 17.5 14.5"/><line x1="13" y1="7" x2="19" y2="1"/><line x1="2" y1="22" x2="22" y2="2"/><polyline points="17.5 17.5 21 21"/><polyline points="6.5 6.5 3 3"/></svg>
+      Compete
+    </button>
+    <button class="nav-item" data-tab="schedule">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      Schedule
+    </button>
+    <button class="nav-item" data-tab="qr" id="nav-qr-btn">
+      <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="5" y="5" width="3" height="3" fill="currentColor"/><rect x="16" y="5" width="3" height="3" fill="currentColor"/><rect x="16" y="16" width="3" height="3" fill="currentColor"/><rect x="5" y="16" width="3" height="3" fill="currentColor"/></svg>
+      <span id="nav-qr-label">Register</span>
+    </button>
+  </nav>
+</div>
+
+<!-- ════════ MODAL (Add / Edit) ════════ -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="modalTitle" class="serif">Add Item</h3>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div id="modalBody"></div>
+    <div style="display:flex;gap:.65rem;margin-top:1rem">
+      <button class="btn btn-ghost" style="flex:1" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" style="flex:2" id="modalSaveBtn" onclick="saveModal()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════ MY SCHEDULE MODAL ════════ -->
+<div class="modal-overlay" id="scheduleOverlay">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 class="serif">My Schedule</h3>
+      <button class="modal-close" onclick="closeScheduleModal()">✕</button>
+    </div>
+    <div id="scheduleModalBody">
+      <p style="font-size:.85rem;color:var(--ink-soft);margin-bottom:1rem">Your selected workshop sessions:</p>
+    </div>
+    <button class="btn btn-ghost" style="width:100%;margin-top:.5rem" onclick="closeScheduleModal()">Close</button>
+  </div>
+</div>
+
+<!-- ════════ PAYMENT MODAL ════════ -->
+<div class="modal-overlay" id="paymentOverlay">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 class="serif" id="paymentModalTitle">Unlock Your Pass</h3>
+      <button class="modal-close" onclick="closePaymentModal()">✕</button>
+    </div>
+    <div id="paymentModalBody">
+      <!-- Step 1: Choose method -->
+      <div id="payStep1">
+        <p style="font-size:.85rem;color:var(--ink-soft);margin-bottom:1.25rem;line-height:1.5;">How would you like to complete your payment?</p>
+        <div class="pay-option" onclick="choosePayOnSpot()">
+          <div class="pay-icon">💵</div>
+          <h4>Pay on the Spot</h4>
+          <p>Pay at the event registration desk. Your QR will be unlocked immediately.</p>
+        </div>
+        <div class="pay-option" onclick="choosePaidInAdvance()">
+          <div class="pay-icon">🏦</div>
+          <h4>Paid in Advance</h4>
+          <p>Already transferred? Submit your proof for admin verification.</p>
+          <div style="margin-top:.85rem">
+            <img src="upi.png" alt="UPI QR Code" style="width:140px;height:140px;object-fit:contain;border-radius:12px;border:1.5px solid var(--peach-deep);padding:6px;background:var(--white)" />
+            <p style="font-size:.72rem;color:var(--ink-soft);margin-top:.4rem">Scan to pay via UPI</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 2: Paid in Advance form -->
+      <div id="payStep2" style="display:none">
+        <p style="font-size:.85rem;color:var(--ink-soft);margin-bottom:1.1rem;line-height:1.5;">Please fill in your payment details. An admin will review and approve your submission.</p>
+        <div class="form-group">
+          <label>Full Name (as used for payment) *</label>
+          <input id="payFullName" placeholder="e.g. Sarah Al-Mansouri" />
+        </div>
+        <div class="form-group">
+          <label>Date Payment Was Made *</label>
+          <input id="payDate" type="date" />
+        </div>
+        <div style="display:flex;gap:.65rem;margin-top:1.1rem">
+          <button class="btn btn-ghost" style="flex:1" onclick="backToPayStep1()">← Back</button>
+          <button class="btn btn-primary" style="flex:2" onclick="submitAdvancePayment()">Submit for Approval</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════ SUPER ADMIN MODAL ════════ -->
+<div class="modal-overlay" id="superAdminOverlay">
+  <div class="modal" style="max-height:90vh">
+    <div class="modal-header">
+      <h3 class="serif">⚡ Super Admin Panel</h3>
+      <button class="modal-close" onclick="closeSuperAdmin()">✕</button>
+    </div>
+    <p style="font-size:.82rem;color:var(--ink-soft);margin-bottom:1.25rem;line-height:1.5">Enter a user's email or name to look up their role and change it, or remove them entirely.</p>
+
+    <!-- Lock Toggle -->
+    <div style="background:linear-gradient(135deg,#EDE9FE,#F5F3FF);border:1.5px solid #C4B5FD;border-radius:14px;padding:1rem 1.1rem;margin-bottom:.75rem;display:flex;align-items:center;justify-content:space-between;gap:1rem">
+      <div>
+        <div style="font-weight:700;font-size:.9rem;color:#5B21B6">🔒 Lock Selections</div>
+        <div style="font-size:.75rem;color:#7C3AED;margin-top:.2rem">Prevents attendees from changing their workshop &amp; competition choices</div>
+      </div>
+      <label class="dm-switch" style="flex-shrink:0">
+        <input type="checkbox" id="lockToggle" onchange="handleLockToggle(this.checked)" />
+        <span class="dm-slider"></span>
+      </label>
+    </div>
+
+    <!-- Maintenance Toggle -->
+    <div style="background:linear-gradient(135deg,#FEF3C7,#FFFBEB);border:1.5px solid #FDE68A;border-radius:14px;padding:1rem 1.1rem;margin-bottom:1.25rem;display:flex;align-items:center;justify-content:space-between;gap:1rem">
+      <div>
+        <div style="font-weight:700;font-size:.9rem;color:#B45309">⚙️ Maintenance Mode</div>
+        <div style="font-size:.75rem;color:#D97706;margin-top:.2rem">Blurs Speakers, Workshops &amp; Competitions for attendees</div>
+      </div>
+      <label class="dm-switch" style="flex-shrink:0">
+        <input type="checkbox" id="maintenanceToggle" onchange="handleMaintenanceToggle(this.checked)" />
+        <span class="dm-slider"></span>
+      </label>
+    </div>
+
+    <div class="form-group">
+      <label>Search by Email or Name</label>
+      <input id="superAdminEmailInput" placeholder="e.g. user@gmail.com or Siddartha…" oninput="onSuperAdminInput()" onkeydown="if(event.key==='Enter')lookupUserByEmail()" />
+    </div>
+    <div id="superAdminNameResults" style="margin-bottom:.75rem"></div>
+    <button class="btn btn-primary" style="width:100%;margin-top:.25rem" onclick="lookupUserByEmail()">Look Up by Email</button>
+    <div id="superAdminResult" style="margin-top:1.25rem"></div>
+  </div>
+</div>
+
+<!-- ════════ ADD TO HOMESCREEN MODAL ════════ -->
+<div class="modal-overlay" id="a2hsOverlay">
+  <div class="modal" style="max-height:85vh">
+    <div class="modal-header">
+      <h3 class="serif">&#128242; Add to Homescreen</h3>
+      <button class="modal-close" onclick="closeA2HS()">&#x2715;</button>
+    </div>
+    <p style="font-size:.85rem;color:var(--ink-soft);margin-bottom:1.1rem;line-height:1.5">Install this app on your device for the best experience — no app store needed.</p>
+    <div class="a2hs-platform-pick">
+      <div class="a2hs-platform-btn" id="a2hs-ios-btn" onclick="selectA2HSPlatform('ios')">
+        <div class="a2hs-icon">&#xf8ff;</div>
+        <h4>iPhone / iPad</h4>
+      </div>
+      <div class="a2hs-platform-btn" id="a2hs-android-btn" onclick="selectA2HSPlatform('android')">
+        <div class="a2hs-icon">&#129419;</div>
+        <h4>Android</h4>
+      </div>
+    </div>
+
+    <!-- iOS Steps -->
+    <div class="a2hs-steps" id="a2hs-ios-steps">
+      <div class="a2hs-ios-version">
+        <button class="a2hs-ios-ver-btn active" id="ios26btn" onclick="selectIOSVersion('new')">iOS 26+</button>
+        <button class="a2hs-ios-ver-btn" id="iosOldBtn" onclick="selectIOSVersion('old')">Earlier iOS</button>
+      </div>
+      <div id="a2hs-ios-new">
+        <div class="a2hs-step">
+          <div class="a2hs-step-num">1</div>
+          <div class="a2hs-step-text">Tap the <strong>three dots (&#183;&#183;&#183;)</strong> in the top-right corner of Safari.</div>
+        </div>
+        <div class="a2hs-step">
+          <div class="a2hs-step-num">2</div>
+          <div class="a2hs-step-text">Tap <strong>Share</strong> from the menu that appears.</div>
+        </div>
+        <div class="a2hs-step">
+          <div class="a2hs-step-num">3</div>
+          <div class="a2hs-step-text">Scroll down the share sheet and tap <strong>Add to Home Screen</strong>.</div>
+        </div>
+        <div class="a2hs-step">
+          <div class="a2hs-step-num">4</div>
+          <div class="a2hs-step-text">Tap <strong>Add</strong> in the top-right corner to confirm. Done!</div>
+        </div>
+      </div>
+      <div id="a2hs-ios-old" style="display:none">
+        <div class="a2hs-step">
+          <div class="a2hs-step-num">1</div>
+          <div class="a2hs-step-text">Open this page in <strong>Safari</strong> (not Chrome or another browser).</div>
+        </div>
+        <div class="a2hs-step">
+          <div class="a2hs-step-num">2</div>
+          <div class="a2hs-step-text">Tap the <strong>Share button</strong> (the square with an arrow pointing up) at the bottom of the screen.</div>
+        </div>
+        <div class="a2hs-step">
+          <div class="a2hs-step-num">3</div>
+          <div class="a2hs-step-text">Scroll down in the share sheet and tap <strong>Add to Home Screen</strong>.</div>
+        </div>
+        <div class="a2hs-step">
+          <div class="a2hs-step-num">4</div>
+          <div class="a2hs-step-text">Tap <strong>Add</strong> in the top-right corner. The app icon will appear on your home screen!</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Android Steps -->
+    <div class="a2hs-steps" id="a2hs-android-steps">
+      <div class="a2hs-step">
+        <div class="a2hs-step-num">1</div>
+        <div class="a2hs-step-text">Open this page in <strong>Google Chrome</strong> on your Android device.</div>
+      </div>
+      <div class="a2hs-step">
+        <div class="a2hs-step-num">2</div>
+        <div class="a2hs-step-text">Tap the <strong>three-dot menu (&#8942;)</strong> in the top-right corner.</div>
+      </div>
+      <div class="a2hs-step">
+        <div class="a2hs-step-num">3</div>
+        <div class="a2hs-step-text">Look for <strong>Install app</strong> or <strong>Add to Home screen</strong> — tap it.</div>
+      </div>
+      <div class="a2hs-step">
+        <div class="a2hs-step-num">4</div>
+        <div class="a2hs-step-text">Tap <strong>Install</strong> to confirm. The FIU Summit app will appear on your home screen!</div>
+      </div>
+    </div>
+
+    <button class="btn btn-ghost" style="width:100%;margin-top:1rem" onclick="closeA2HS()">Done</button>
+  </div>
+</div>
+
+<!-- ════════ INFO POPUP MODAL ════════ -->
+<div class="modal-overlay" id="infoPopupOverlay">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="infoPopupTitle" class="serif">More Info</h3>
+      <button class="modal-close" onclick="closeInfoPopup()">✕</button>
+    </div>
+    <div id="infoPopupBody"></div>
+    <button class="btn btn-ghost" style="width:100%;margin-top:.75rem" onclick="closeInfoPopup()">Close</button>
+  </div>
+</div>
+
+<!-- ════════ SCHEDULE ITEM MODAL ════════ -->
+<div class="modal-overlay" id="schedItemOverlay">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="schedItemModalTitle" class="serif">Add Schedule Item</h3>
+      <button class="modal-close" onclick="closeScheduleItemModal()">✕</button>
+    </div>
+    <div class="form-group">
+      <label>Title *</label>
+      <input id="si-title" placeholder="e.g. Opening Keynote" />
+    </div>
+    <div class="form-group">
+      <label>Category *</label>
+      <select id="si-category">
+        <option value="general">🌟 General</option>
+        <option value="speaker">🎤 Speaker</option>
+        <option value="workshop">🛠 Workshop</option>
+        <option value="competition">🏆 Competition</option>
+        <option value="lunch">🍽 Lunch</option>
+        <option value="break">☕ Break</option>
+        <option value="ceremony">🎊 Ceremony</option>
+        <option value="networking">🤝 Networking</option>
+      </select>
+    </div>
+    <div style="display:flex;gap:.65rem">
+      <div class="form-group" style="flex:1">
+        <label>Start Time *</label>
+        <input type="time" id="si-start" />
+      </div>
+      <div class="form-group" style="flex:1">
+        <label>End Time</label>
+        <input type="time" id="si-end" placeholder="Optional" />
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Location / Room</label>
+      <input id="si-location" placeholder="e.g. Main Hall, Room 3…" />
+    </div>
+    <div class="form-group">
+      <label>Description</label>
+      <textarea id="si-desc" rows="3" placeholder="Brief description (optional)"></textarea>
+    </div>
+    <div style="display:flex;gap:.65rem;margin-top:1rem">
+      <button class="btn btn-ghost" style="flex:1" onclick="closeScheduleItemModal()">Cancel</button>
+      <button class="btn btn-primary" style="flex:2" onclick="saveScheduleItem()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<!--
+════════════════════════════════════════════════════════════
+  FIRESTORE SECURITY RULES  (paste into Firebase Console)
+════════════════════════════════════════════════════════════
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper: is the caller an admin?
+    function isAdmin() {
+      return request.auth != null &&
+        get(/databases/$(database)/documents/Users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    // Public read, admin write — content collections
+    match /Speakers/{id} {
+      allow read: if request.auth != null;
+      allow write: if isAdmin();
+    }
+    match /Workshops/{id} {
+      allow read: if request.auth != null;
+      allow write: if isAdmin();
+    }
+    match /Competitions/{id} {
+      allow read: if request.auth != null;
+      allow write: if isAdmin();
+    }
+    match /Schedule/{id} {
+      allow read: if request.auth != null;
+      allow write: if isAdmin();
+    }
+
+    match /Users/{uid} {
+      allow read:  if request.auth.uid == uid || isAdmin();
+      allow create: if request.auth.uid == uid;
+      allow update: if request.auth.uid == uid || isAdmin();
+    }
+
+    // AppSettings: any authenticated user can read, only super admin can write
+    match /AppSettings/{doc} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && request.auth.token.email == 'jash2607@gmail.com';
+    }
+
+    // User schedules: owner only
+    match /User-Schedules/{uid} {
+      allow read, write: if request.auth != null && request.auth.uid == uid;
+    }
+
+    // Payment requests: users create own, admins read/update all
+    match /PaymentRequests/{id} {
+      allow create: if request.auth != null && request.resource.data.uid == request.auth.uid;
+      allow read, update: if isAdmin();
+      allow read: if request.auth != null &&
+        resource.data.uid == request.auth.uid;
+    }
+  }
+}
+════════════════════════════════════════════════════════════
+-->
+
+<!-- ════════════════════════════════════════
+     MAIN APPLICATION SCRIPT
+     ════════════════════════════════════════ -->
+<script>
+/* ── Wait for Firebase module to load ── */
+window.addEventListener('load', () => setTimeout(initApp, 300));
+
+let currentUser   = null;
+let isAdmin       = false;
+let userRole      = 'attendee';
+let userSchedule  = [];
+let modalType     = null;
+let editId        = null;
+let unsubs        = [];
+let allSpeakers   = [];
+let allWorkshops  = [];
+let allCompetitions = [];
+let qrUnlocked    = false;  // tracks whether QR is currently visible
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   INIT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+function initApp() {
+  const F = window.__FIU__;
+  if (!F) { console.error("Firebase not initialised — replace the placeholder config values."); return; }
+
+  /* Offline detection */
+  window.addEventListener('online',  () => document.getElementById('offlineBanner').classList.remove('visible'));
+  window.addEventListener('offline', () => document.getElementById('offlineBanner').classList.add('visible'));
+  if (!navigator.onLine) document.getElementById('offlineBanner').classList.add('visible');
+
+  F.onAuthStateChanged(F.auth, async (user) => {
+    if (user) {
+      currentUser = user;
+      await checkRole(user);
+      await showApp(user);
+    } else {
+      currentUser = null; isAdmin = false; userRole = 'attendee';
+      showSplash();
+    }
+  });
+
+  document.getElementById('loginBtn').onclick = async () => {
+    try {
+      await F.signInWithPopup(F.auth, F.provider);
+    } catch(e) {
+      showToast('Login failed: ' + e.message);
+    }
+  };
+
+  document.getElementById('logoutBtn').onclick = () => {
+    unsubs.forEach(u => u()); unsubs = [];
+    if (approvalsUnsub) { approvalsUnsub(); approvalsUnsub = null; }
+    allSpeakers = []; allWorkshops = []; allCompetitions = [];
+    userSchedule = []; qrUnlocked = false;
+    window._workshopData = {}; window._competitionData = {};
+    window._chosenCompetition = null; window._chosenWorkshop = null;
+    window._selectionsLocked = false; window._allUsersSnap = [];
+    window._maintenanceOn = false;
+    modalType = null; editId = null;
+    F.signOut(F.auth); toggleMenu(false);
+  };
+
+  document.getElementById('settingsBtn').onclick = () => toggleMenu();
+  document.getElementById('adminPanelBtn').onclick = () => { toggleMenu(false); showAdminView(); };
+  document.getElementById('superAdminBtn').onclick  = () => { toggleMenu(false); openSuperAdmin(); };
+
+  document.querySelectorAll('.nav-item').forEach(btn => btn.onclick = () => switchTab(btn.dataset.tab));
+  document.querySelectorAll('.admin-tab').forEach(btn => btn.onclick = () => switchAdminTab(btn.dataset.adminTab));
+  document.getElementById('modalOverlay').onclick   = e => { if (e.target===e.currentTarget) closeModal(); };
+  document.getElementById('scheduleOverlay').onclick = e => { if (e.target===e.currentTarget) closeScheduleModal(); };
+  document.getElementById('paymentOverlay').onclick  = e => { if (e.target===e.currentTarget) closePaymentModal(); };
+  document.getElementById('superAdminOverlay').onclick = e => { if (e.target===e.currentTarget) closeSuperAdmin(); };
+  document.getElementById('a2hsOverlay').onclick = e => { if (e.target===e.currentTarget) closeA2HS(); };
+  document.getElementById('infoPopupOverlay').onclick = e => { if (e.target===e.currentTarget) closeInfoPopup(); };
+  document.getElementById('schedItemOverlay').onclick  = e => { if (e.target===e.currentTarget) closeScheduleItemModal(); };
+  document.addEventListener('click', e => {
+    if (!e.target.closest('.settings-btn') && !e.target.closest('.user-menu')) toggleMenu(false);
+  });
+}
+
+/* ── Role Check ── */
+async function checkRole(user) {
+  const F = window.__FIU__;
+  try {
+    const snap = await F.getDoc(F.doc(F.db, 'Users', user.uid));
+    if (snap.exists()) {
+      const data = snap.data();
+      const role = data.role;
+      userRole = role || 'attendee';
+      isAdmin = (role === 'admin');
+      // Load dark mode preference saved in Firebase
+      if (data.darkMode === true) {
+        applyDarkMode(true, false);
+      } else {
+        applyDarkMode(false, false);
+      }
+    } else {
+      isAdmin = false; userRole = 'attendee';
+      await F.setDoc(F.doc(F.db, 'Users', user.uid), {
+        name: user.displayName, email: user.email,
+        photoURL: user.photoURL, role: 'attendee',
+        darkMode: false,
+        createdAt: F.serverTimestamp()
+      });
+      applyDarkMode(false, false);
+    }
+  } catch(e) { console.warn('Role check failed:', e.message); isAdmin = false; userRole = 'attendee'; }
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   SPLASH / APP TOGGLE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+function showSplash() {
+  document.getElementById('splash').classList.remove('hidden');
+  document.getElementById('app').classList.remove('visible');
+  qrGenerated = false;
+}
+async function showApp(user) {
+  document.getElementById('userAvatar').src = user.photoURL || '';
+  document.getElementById('menuName').textContent  = user.displayName;
+  document.getElementById('menuEmail').textContent = user.email;
+  const pill = document.getElementById('menuRole');
+  const roleLabels = { admin: 'Admin', volunteer: 'Volunteer', attendee: 'Attendee' };
+  pill.textContent = roleLabels[userRole] || 'Attendee';
+  pill.className   = 'role-pill ' + (userRole || 'attendee');
+  document.getElementById('adminPanelBtn').style.display = isAdmin ? 'block' : 'none';
+  document.getElementById('superAdminBtn').style.display  = (user.email === 'jash2607@gmail.com') ? 'block' : 'none';
+
+  // Load lock setting
+  await loadLockSetting();
+  // Load maintenance setting
+  await loadMaintenanceSetting();
+
+  // All clear — show the app
+  document.getElementById('splash').classList.add('hidden');
+  document.getElementById('app').classList.add('visible');
+
+  generateQR(user);
+  checkPaymentStatus(user.uid);
+  loadSchedule(user.uid).then(() => {
+    listenSpeakers(); listenWorkshops(); listenCompetitions(); listenSchedule();
+  });
+  if (isAdmin) { loadAdminSpeakers(); loadAdminWorkshops(); loadAdminCompetitions(); }
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   QR CODE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+let qrGenerated = false;
+function generateQR(user) {
+  if (qrGenerated) return; qrGenerated = true;
+  document.getElementById('qrName').textContent = user.displayName;
+  document.getElementById('qrUID').textContent  = user.uid.slice(0,18) + '…';
+  new QRCode(document.getElementById('qrcode'), {
+    text: JSON.stringify({ uid: user.uid, name: user.displayName, event: 'FIU-2025' }),
+    width: 200, height: 200,
+    colorDark: '#2A1F1A', colorLight: '#FFF5EE',
+    correctLevel: QRCode.CorrectLevel.H
+  });
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   PAYMENT STATUS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+function checkPaymentStatus(uid) {
+  // This function is fully replaced below — see "QR PAGE — PAY IN ADVANCE BUTTON" section
+  const F = window.__FIU__;
+  const unsub = F.onSnapshot(F.doc(F.db, 'Users', uid), snap => {
+    if (!snap.exists()) return;
+    const data = snap.data();
+    const paid = data.paid;
+    const role = data.role;
+    _currentPaidStatus = paid;
+    const advWrap = document.getElementById('payAdvanceQrWrap');
+
+    const navQrLabel = document.getElementById('nav-qr-label');
+    const isFullyPaid = (paid === 'yes' || paid === 'onSpot');
+
+    if (navQrLabel) {
+      navQrLabel.textContent = (role === 'admin' || role === 'volunteer' || isFullyPaid) ? 'My Pass' : 'Register';
+    }
+
+    if (role === 'admin' || role === 'volunteer') {
+      unlockQR();
+      if (advWrap) advWrap.style.display = 'none';
+    } else if (paid === 'onSpot') {
+      unlockQR();
+      if (advWrap) advWrap.style.display = 'block';
+    } else if (paid === 'yes') {
+      unlockQR();
+      if (advWrap) advWrap.style.display = 'none';
+    } else if (paid === 'waitingForApproval') {
+      showWaitingBanner();
+      if (advWrap) advWrap.style.display = 'none';
+    } else {
+      lockQR();
+      if (advWrap) advWrap.style.display = 'none';
+    }
+  });
+  unsubs.push(unsub);
+}
+
+function unlockQR() {
+  qrUnlocked = true;
+  const wrap = document.getElementById('qrBlurWrap');
+  const overlay = document.getElementById('qrLockOverlay');
+  if (wrap) wrap.classList.remove('locked');
+  if (overlay) overlay.style.display = 'none';
+  document.getElementById('waitingBanner').style.display = 'none';
+}
+
+function lockQR() {
+  qrUnlocked = false;
+  const wrap = document.getElementById('qrBlurWrap');
+  const overlay = document.getElementById('qrLockOverlay');
+  if (wrap) wrap.classList.add('locked');
+  if (overlay) overlay.style.display = 'flex';
+  document.getElementById('waitingBanner').style.display = 'none';
+}
+
+function showWaitingBanner() {
+  lockQR();
+  document.getElementById('waitingBanner').style.display = 'block';
+  const overlay = document.getElementById('qrLockOverlay');
+  if (overlay) overlay.style.display = 'none';
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   PAYMENT MODAL
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+function openPaymentModal() {
+  if (qrUnlocked) return;
+  document.getElementById('payStep1').style.display = 'block';
+  document.getElementById('payStep2').style.display = 'none';
+  document.getElementById('paymentModalTitle').textContent = 'Unlock Your Pass';
+  document.getElementById('paymentOverlay').classList.add('open');
+}
+
+function closePaymentModal() {
+  document.getElementById('paymentOverlay').classList.remove('open');
+}
+
+function backToPayStep1() {
+  document.getElementById('payStep1').style.display = 'block';
+  document.getElementById('payStep2').style.display = 'none';
+  document.getElementById('paymentModalTitle').textContent = 'Unlock Your Pass';
+}
+
+async function choosePayOnSpot() {
+  const F = window.__FIU__;
+  try {
+    await F.updateDoc(F.doc(F.db, 'Users', currentUser.uid), {
+      paid: 'onSpot',
+      paymentMethod: 'on-spot',
+      paymentUpdatedAt: F.serverTimestamp()
+    });
+    closePaymentModal();
+    unlockQR();
+    showToast('✓ QR unlocked — pay at the desk');
+  } catch(e) {
+    showToast('Error: ' + e.message);
+  }
+}
+
+function choosePaidInAdvance() {
+  document.getElementById('payStep1').style.display = 'none';
+  document.getElementById('payStep2').style.display = 'block';
+  document.getElementById('paymentModalTitle').textContent = 'Payment Proof';
+  // Set default date to today
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('payDate').value = today;
+}
+
+async function submitAdvancePayment() {
+  const F = window.__FIU__;
+  const name = document.getElementById('payFullName').value.trim();
+  const date = document.getElementById('payDate').value;
+  if (!name) { showToast('Please enter the full name used for payment'); return; }
+  if (!date) { showToast('Please select the payment date'); return; }
+
+  try {
+    // Save payment request to a separate collection for admin review
+    await F.addDoc(F.collection(F.db, 'PaymentRequests'), {
+      uid: currentUser.uid,
+      userEmail: currentUser.email,
+      userName: currentUser.displayName,
+      payerName: name,
+      paymentDate: date,
+      status: 'pending',
+      submittedAt: F.serverTimestamp()
+    });
+
+    // Update user doc: paid = 'waitingForApproval'
+    await F.updateDoc(F.doc(F.db, 'Users', currentUser.uid), {
+      paid: 'waitingForApproval',
+      paymentMethod: 'advance',
+      payerName: name,
+      paymentDate: date,
+      paymentUpdatedAt: F.serverTimestamp()
+    });
+
+    closePaymentModal();
+    showWaitingBanner();
+    showToast('Submitted! Awaiting admin approval.');
+  } catch(e) {
+    showToast('Error: ' + e.message);
+  }
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   ADMIN — APPROVALS TAB
+   Shows users with paid = 'waitingForApproval'
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+let approvalsUnsub = null;
+function loadAdminApprovals() {
+  if (!isAdmin) return;
+  const F = window.__FIU__;
+  const el = document.getElementById('admin-approvals-list');
+  el.innerHTML = '<div class="loader"><div class="spinner"></div></div>';
+
+  // Unsubscribe previous listener if any
+  if (approvalsUnsub) { approvalsUnsub(); approvalsUnsub = null; }
+
+  approvalsUnsub = F.onSnapshot(F.collection(F.db, 'Users'), snap => {
+    const waiting = snap.docs
+      .map(d => ({ uid: d.id, ...d.data() }))
+      .filter(u => u.paid === 'waitingForApproval');
+
+    if (!waiting.length) {
+      el.innerHTML = emptyState('✅', 'No pending approvals');
+      return;
+    }
+
+    el.innerHTML = waiting.map(u => `
+      <div class="pay-req-card">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:.5rem">
+          <h4>${esc(u.name || u.email)}</h4>
+          <span style="font-size:.72rem;font-weight:700;padding:.2rem .6rem;border-radius:100px;background:#FEF3C7;color:#B45309;text-transform:uppercase;letter-spacing:.04em">Pending</span>
+        </div>
+        <div class="meta">
+          📧 ${esc(u.email)}<br>
+          👤 Paid as: <strong>${esc(u.payerName || '—')}</strong><br>
+          📅 Date paid: <strong>${esc(u.paymentDate || '—')}</strong>
+        </div>
+        <div class="actions">
+          <button class="btn btn-approve btn-sm" onclick="approveUserPayment('${u.uid}','${esc(u.email)}')">✓ Approve</button>
+          <button class="btn btn-reject btn-sm"  onclick="rejectUserPayment('${u.uid}')">✕ Reject</button>
+        </div>
+      </div>`).join('');
+  }, e => {
+    el.innerHTML = emptyState('⚠️', 'Failed to load approvals: ' + e.message);
+  });
+}
+
+async function approveUserPayment(uid, userEmail) {
+  const F = window.__FIU__;
+  try {
+    await F.updateDoc(F.doc(F.db, 'Users', uid), {
+      paid: 'yes',
+      paymentApprovedAt: F.serverTimestamp(),
+      paymentApprovedBy: currentUser.email
+    });
+    showToast('✓ Approved — QR unlocked for user');
+    loadAdminApprovals();
+  } catch(e) {
+    showToast('Error: ' + e.message);
+  }
+}
+
+async function rejectUserPayment(uid) {
+  if (!confirm('Reject this payment? The user will need to resubmit.')) return;
+  const F = window.__FIU__;
+  try {
+    await F.updateDoc(F.doc(F.db, 'Users', uid), {
+      paid: '',
+      paymentUpdatedAt: F.serverTimestamp()
+    });
+    showToast('Payment request rejected');
+    loadAdminApprovals();
+  } catch(e) {
+    showToast('Error: ' + e.message);
+  }
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   SUPER ADMIN PANEL (jash2607@gmail.com only)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+function openSuperAdmin() {
+  if (!currentUser || currentUser.email !== 'jash2607@gmail.com') {
+    showToast('Access denied'); return;
+  }
+  document.getElementById('superAdminEmailInput').value = '';
+  document.getElementById('superAdminResult').innerHTML = '';
+  document.getElementById('superAdminNameResults').innerHTML = '';
+  const toggle = document.getElementById('lockToggle');
+  if (toggle) toggle.checked = window._selectionsLocked || false;
+  const mToggle = document.getElementById('maintenanceToggle');
+  if (mToggle) mToggle.checked = window._maintenanceOn || false;
+  document.getElementById('superAdminOverlay').classList.add('open');
+}
+function closeSuperAdmin() {
+  document.getElementById('superAdminOverlay').classList.remove('open');
+}
+
+async function lookupUserByEmail() {
+  const F = window.__FIU__;
+  const input = document.getElementById('superAdminEmailInput').value.trim().toLowerCase();
+  const resultEl = document.getElementById('superAdminResult');
+  if (!input) { showToast('Please enter an email or name'); return; }
+
+  if (input.includes('@')) {
+    resultEl.innerHTML = '<div class="loader"><div class="spinner"></div></div>';
+    try {
+      const snap = await F.getDocs(F.collection(F.db, 'Users'));
+      const match = snap.docs.map(d => ({ uid: d.id, ...d.data() }))
+        .find(u => (u.email || '').toLowerCase() === input);
+      if (!match) {
+        resultEl.innerHTML = `<div style="text-align:center;padding:1.5rem;color:var(--ink-soft);font-size:.88rem">No user found with that email.</div>`;
+        return;
+      }
+      renderSuperAdminUserCard(match, resultEl);
+    } catch(e) {
+      resultEl.innerHTML = `<div style="color:#dc2626;font-size:.85rem;text-align:center">Error: ${esc(e.message)}</div>`;
+    }
+  } else {
+    showToast('Type a full email, or pick a name from the list above');
+  }
+}
+
+async function onSuperAdminInput() {
+  const F = window.__FIU__;
+  const input = document.getElementById('superAdminEmailInput').value.trim().toLowerCase();
+  const nameResultsEl = document.getElementById('superAdminNameResults');
+  if (!input || input.length < 2 || input.includes('@')) { nameResultsEl.innerHTML = ''; return; }
+  try {
+    const snap = await F.getDocs(F.collection(F.db, 'Users'));
+    const matches = snap.docs.map(d => ({ uid: d.id, ...d.data() }))
+      .filter(u => (u.name || '').toLowerCase().includes(input));
+    if (!matches.length) {
+      nameResultsEl.innerHTML = `<div style="font-size:.82rem;color:var(--ink-soft);padding:.4rem 0">No names match.</div>`;
+      return;
+    }
+    nameResultsEl.innerHTML = matches.slice(0, 8).map(u => `
+      <div class="sa-user-result-item" onclick="selectSuperAdminUser('${u.uid}')">
+        <h4>${esc(u.name || '—')}</h4>
+        <p>${esc(u.email || '—')}</p>
+      </div>`).join('');
+  } catch(e) {}
+}
+
+async function selectSuperAdminUser(uid) {
+  const F = window.__FIU__;
+  document.getElementById('superAdminNameResults').innerHTML = '';
+  const resultEl = document.getElementById('superAdminResult');
+  resultEl.innerHTML = '<div class="loader"><div class="spinner"></div></div>';
+  try {
+    const snap = await F.getDoc(F.doc(F.db, 'Users', uid));
+    if (!snap.exists()) { resultEl.innerHTML = `<div style="text-align:center;padding:1.5rem;color:var(--ink-soft)">User not found.</div>`; return; }
+    renderSuperAdminUserCard({ uid: snap.id, ...snap.data() }, resultEl);
+  } catch(e) {
+    resultEl.innerHTML = `<div style="color:#dc2626;font-size:.85rem;text-align:center">Error: ${esc(e.message)}</div>`;
+  }
+}
+
+function renderSuperAdminUserCard(match, resultEl) {
+    const role = match.role || 'attendee';
+    const roleColors = {
+      admin:     { bg: '#FEF3C7', color: '#B45309', label: 'ADMIN' },
+      attendee:  { bg: 'var(--gold-light)', color: 'var(--gold)', label: 'ATTENDEE' },
+      volunteer: { bg: '#E0E7FF', color: '#4338CA', label: 'VOLUNTEER' }
+    };
+    const rc = roleColors[role] || roleColors.attendee;
+    const initials = (match.name || match.email || '?').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+    const roleBtn = (r, label, icon) => {
+      const active = role === r;
+      return `<button onclick="setUserRole('${match.uid}','${r}')" style="flex:1;padding:.55rem .5rem;border-radius:10px;border:2px solid ${active?'var(--gold)':'var(--peach-deep)'};background:${active?'var(--gold)':'var(--white)'};color:${active?'var(--white)':'var(--ink-soft)'};font-size:.78rem;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s">${icon} ${label}</button>`;
+    };
+    resultEl.innerHTML = `
+      <div style="background:var(--peach);border-radius:16px;padding:1.25rem;border:1px solid var(--peach-deep)">
+        <div style="display:flex;align-items:center;gap:.85rem;margin-bottom:1rem">
+          <div style="width:48px;height:48px;border-radius:12px;background:linear-gradient(135deg,var(--peach-deep),var(--gold-light));display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-size:1.3rem;font-weight:600;color:var(--gold);flex-shrink:0">${esc(initials)}</div>
+          <div>
+            <div style="font-weight:600;font-size:.95rem">${esc(match.name || '—')}</div>
+            <div style="font-size:.78rem;color:var(--ink-soft)">${esc(match.email)}</div>
+            <span style="display:inline-block;margin-top:.3rem;font-size:.68rem;font-weight:700;padding:.15rem .55rem;border-radius:100px;background:${rc.bg};color:${rc.color};letter-spacing:.05em">${rc.label}</span>
+          </div>
+        </div>
+        <p style="font-size:.75rem;font-weight:600;color:var(--ink-soft);margin-bottom:.5rem;letter-spacing:.04em;text-transform:uppercase">Set Role</p>
+        <div style="display:flex;gap:.5rem;margin-bottom:1rem">
+          ${roleBtn('attendee','Attendee','👤')}
+          ${roleBtn('volunteer','Volunteer','🙋')}
+          ${roleBtn('admin','Admin','⭐')}
+        </div>
+        <hr style="border:none;border-top:1px solid var(--peach-deep);margin-bottom:1rem"/>
+        <button onclick="confirmDeleteUser('${match.uid}','${esc(match.name||match.email)}')" style="width:100%;padding:.6rem;border-radius:10px;border:1.5px solid #FECACA;background:#FEE2E2;color:#991B1B;font-size:.85rem;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s">🗑 Remove User Entirely</button>
+      </div>`;
+}
+
+async function setUserRole(uid, newRole) {
+  const F = window.__FIU__;
+  try {
+    await F.updateDoc(F.doc(F.db, 'Users', uid), { role: newRole });
+    const labels = { admin: '⭐ User is now Admin', volunteer: '🙋 User is now Volunteer', attendee: '✓ User is now Attendee' };
+    showToast(labels[newRole] || '✓ Role updated');
+    selectSuperAdminUser(uid);
+  } catch(e) {
+    showToast('Error: ' + e.message);
+  }
+}
+
+function confirmDeleteUser(uid, name) {
+  if (!confirm(`Permanently remove "${name}" from the database?\n\nThis cannot be undone.`)) return;
+  deleteUserFromDB(uid);
+}
+
+async function deleteUserFromDB(uid) {
+  const F = window.__FIU__;
+  try {
+    await F.deleteDoc(F.doc(F.db, 'Users', uid));
+    // Also clean up User-Schedules if exists
+    try { await F.deleteDoc(F.doc(F.db, 'User-Schedules', uid)); } catch(_) {}
+    showToast('🗑 User removed from database');
+    document.getElementById('superAdminResult').innerHTML = `<div style="text-align:center;padding:1.5rem;color:var(--ink-soft);font-size:.88rem">User has been removed.</div>`;
+    document.getElementById('superAdminEmailInput').value = '';
+  } catch(e) {
+    showToast('Error: ' + e.message);
+  }
+}
+
+let currentTab = 'speakers';
+function switchTab(tab) {
+  document.getElementById('admin-view').classList.remove('active');
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('view-' + tab).classList.add('active');
+  document.querySelector(`.nav-item[data-tab="${tab}"]`).classList.add('active');
+  currentTab = tab; toggleMenu(false);
+}
+function showAdminView() {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('admin-view').classList.add('active');
+  currentTab = 'admin';
+  // Ensure first tab (speakers) is active and data is fresh
+  switchAdminTab('speakers');
+  loadAdminSpeakers();
+}
+function switchAdminTab(tab) {
+  document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
+  document.querySelector(`[data-admin-tab="${tab}"]`).classList.add('active');
+  document.querySelectorAll('.admin-section').forEach(s => s.classList.remove('active'));
+  document.getElementById('admin-' + tab).classList.add('active');
+  if (tab === 'approvals') loadAdminApprovals();
+  if (tab === 'onspot') loadAdminOnSpot();
+  if (tab === 'schedule') loadAdminSchedule();
+}
+function toggleMenu(force) {
+  const m = document.getElementById('userMenu');
+  if (force === false) { m.classList.remove('open'); return; }
+  if (force === true)  { m.classList.add('open');    return; }
+  m.classList.toggle('open');
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   USER SCHEDULE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+async function loadSchedule(uid) {
+  const F = window.__FIU__;
+  try {
+    const snap = await F.getDoc(F.doc(F.db, 'User-Schedules', uid));
+    userSchedule = snap.exists() ? (snap.data().workshops || []) : [];
+    // Load chosen competition from Users doc
+    const userSnap = await F.getDoc(F.doc(F.db, 'Users', uid));
+    if (userSnap.exists()) {
+      window._chosenCompetition = userSnap.data().competition || null;
+      window._chosenWorkshop    = userSnap.data().workshop    || null;
+    } else {
+      window._chosenCompetition = null;
+      window._chosenWorkshop    = null;
+    }
+  } catch(e) { userSchedule = []; window._chosenCompetition = null; window._chosenWorkshop = null; }
+  updateScheduleCount();
+}
+
+/* ── Inline card error helper ── */
+function showCardError(id, msg, duration = 3500) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.textContent = msg;
+  el.classList.add('visible');
+  clearTimeout(el._timer);
+  el._timer = setTimeout(() => el.classList.remove('visible'), duration);
+}
+
+async function toggleWorkshop(workshopId, workshopTitle, cardId) {
+  const F = window.__FIU__;
+  const uid = currentUser.uid;
+  const alreadyChosen = window._chosenWorkshop;
+
+  // Check if user is registered (paid)
+  if (_currentPaidStatus !== 'yes' && _currentPaidStatus !== 'onSpot' && userRole !== 'admin' && userRole !== 'volunteer') {
+    if (cardId) showCardError('werr-' + workshopId, "⛔ Cannot register for workshop/competition. Please register first! To register click on the 'Register' tab in the bottom.");
+    showToast("⛔ Please register first! Tap the 'Register' tab below.");
+    return;
+  }
+
+  // Check lock first
+  if (window._selectionsLocked) {
+    if (cardId) showCardError('werr-' + workshopId, '🔒 Changes are LOCKED. you cannot change it.');
+    showToast('🔒 Changes are LOCKED. you cannot change it.');
+    return;
+  }
+
+  // Deselect if clicking the same one
+  if (alreadyChosen === workshopTitle) {
+    window._chosenWorkshop = null;
+    userSchedule = [];
+    try {
+      await F.setDoc(F.doc(F.db, 'User-Schedules', uid), { workshops: [], updatedAt: F.serverTimestamp() });
+      await F.updateDoc(F.doc(F.db, 'Users', uid), { workshop: '' });
+    } catch(e) { showToast('Sync error — check connection'); }
+    renderWorkshops(allWorkshops);
+    updateScheduleCount();
+    showToast('Removed from schedule');
+    return;
+  }
+
+  // Block if trying to pick a different one
+  if (alreadyChosen && alreadyChosen !== workshopTitle) {
+    if (cardId) showCardError('werr-' + workshopId, '⚠️ Deselect your current workshop first.');
+    showToast('⚠️ Limit is 1 workshop — deselect your current pick first');
+    return;
+  }
+
+  // Check capacity
+  const workshop = allWorkshops.find(w => w.id === workshopId);
+  if (workshop && workshop.maxCapacity) {
+    const users = window._allUsersSnap || [];
+    const count = users.filter(u => u.workshop === workshopTitle).length;
+    if (count >= parseInt(workshop.maxCapacity)) {
+      if (cardId) showCardError('werr-' + workshopId, '🔴 The workshop is full. Pick another workshop.');
+      showToast('🔴 The workshop is full. Pick another workshop.');
+      return;
+    }
+  }
+
+  // Select
+  window._chosenWorkshop = workshopTitle;
+  userSchedule = [workshopId];
+  updateScheduleCount();
+  try {
+    await F.setDoc(F.doc(F.db, 'User-Schedules', uid), { workshops: [workshopId], updatedAt: F.serverTimestamp() });
+    await F.updateDoc(F.doc(F.db, 'Users', uid), { workshop: workshopTitle });
+  } catch(e) { showToast('Sync error — check connection'); }
+  renderWorkshops(allWorkshops);
+  showToast('✓ Workshop selected');
+}
+function updateScheduleCount() {
+  document.getElementById('schedule-count').textContent = userSchedule.length;
+}
+
+/* ── My Schedule modal ── */
+function openMySchedule() {
+  const body = document.getElementById('scheduleModalBody');
+  if (!userSchedule.length) {
+    body.innerHTML = `<div class="empty"><div class="icon">📋</div><p>No sessions added yet.<br>Tap workshops to build your schedule.</p></div>`;
+  } else {
+    const items = allWorkshops.filter(w => userSchedule.includes(w.id));
+    body.innerHTML = `<p style="font-size:.82rem;color:var(--ink-soft);margin-bottom:.85rem">${items.length} session${items.length!==1?'s':''} selected:</p>` +
+      items.map(w => `
+        <div class="my-schedule-item">
+          <h4>${esc(w.title)}</h4>
+          <p>${esc(w.time||'')}${w.location ? ' · ' + esc(w.location) : ''}</p>
+          ${w.category ? `<span class="badge">${esc(w.category)}</span>` : ''}
+        </div>`).join('');
+  }
+  document.getElementById('scheduleOverlay').classList.add('open');
+}
+function closeScheduleModal() { document.getElementById('scheduleOverlay').classList.remove('open'); }
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   REAL-TIME LISTENERS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+function listenSpeakers() {
+  const F = window.__FIU__;
+  document.getElementById('speakers-list').innerHTML = skeletonCards(3);
+  const u = F.onSnapshot(F.collection(F.db, 'Speakers'), snap => {
+    allSpeakers = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    renderSpeakers(allSpeakers);
+  }, e => { document.getElementById('speakers-list').innerHTML = emptyState('⚠️', 'Failed to load speakers'); });
+  unsubs.push(u);
+}
+function listenWorkshops() {
+  const F = window.__FIU__;
+  document.getElementById('workshops-list').innerHTML = skeletonCards(3);
+  const u = F.onSnapshot(F.collection(F.db, 'Workshops'), snap => {
+    allWorkshops = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    renderWorkshops(allWorkshops);
+  }, e => { document.getElementById('workshops-list').innerHTML = emptyState('⚠️', 'Failed to load workshops'); });
+  unsubs.push(u);
+  // Listen to Users collection so counts update in real-time
+  const u2 = F.onSnapshot(F.collection(F.db, 'Users'), snap => {
+    window._allUsersSnap = snap.docs.map(d => ({ uid: d.id, ...d.data() }));
+    if (allWorkshops.length) renderWorkshops(allWorkshops);
+    if (allCompetitions.length) renderCompetitions(allCompetitions);
+  }, () => {});
+  unsubs.push(u2);
+}
+function listenCompetitions() {
+  const F = window.__FIU__;
+  document.getElementById('competitions-list').innerHTML = skeletonCards(2);
+  const u = F.onSnapshot(F.collection(F.db, 'Competitions'), snap => {
+    allCompetitions = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    renderCompetitions(allCompetitions);
+  }, e => { document.getElementById('competitions-list').innerHTML = emptyState('⚠️', 'Failed to load competitions'); });
+  unsubs.push(u);
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   SEARCH / FILTER
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+function filterSpeakers(q) {
+  const filtered = q ? allSpeakers.filter(s =>
+    (s.name||'').toLowerCase().includes(q.toLowerCase()) ||
+    (s.role||'').toLowerCase().includes(q.toLowerCase()) ||
+    (s.bio||'').toLowerCase().includes(q.toLowerCase())
+  ) : allSpeakers;
+  renderSpeakers(filtered);
+}
+function filterWorkshops(q) {
+  const filtered = q ? allWorkshops.filter(w =>
+    (w.title||'').toLowerCase().includes(q.toLowerCase()) ||
+    (w.category||'').toLowerCase().includes(q.toLowerCase()) ||
+    (w.location||'').toLowerCase().includes(q.toLowerCase())
+  ) : allWorkshops;
+  renderWorkshops(filtered);
+}
+function filterCompetitions(q) {
+  const filtered = q ? allCompetitions.filter(c =>
+    (c.title||'').toLowerCase().includes(q.toLowerCase()) ||
+    (c.description||'').toLowerCase().includes(q.toLowerCase())
+  ) : allCompetitions;
+  renderCompetitions(filtered);
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   RENDERERS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+function renderSpeakers(speakers) {
+  const el = document.getElementById('speakers-list');
+  if (!speakers.length) { el.innerHTML = emptyState('🎤', 'No speakers found'); return; }
+  el.innerHTML = speakers.map((s, i) => `
+    <div class="speaker-card" id="sp-${s.id}" style="animation-delay:${i*60}ms">
+      <div class="speaker-avatar" style="${s.photoURL ? 'padding:0;background:none;' : ''}">
+        ${s.photoURL
+          ? '<img src="'+s.photoURL+'" style="width:64px;height:64px;border-radius:14px;object-fit:cover;" />'
+          : (s.name||'?')[0].toUpperCase()}
+      </div>
+      <div class="speaker-info">
+        <h3>${esc(s.name)}</h3>
+        <div class="role">${esc(s.role||'')}</div>
+        <p class="bio-text">${esc(s.bio||'')}</p>
+        ${s.bio && s.bio.length > 100 ? `<button class="read-more" onclick="toggleBio('sp-${s.id}',this)">Read more</button>` : ''}
+        ${(s.linkedin || s.youtube || s.instagram) ? `
+        <button class="speaker-more-info-btn" onclick="toggleSpeakerSocials('sp-${s.id}',this)">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          More info
+        </button>
+        <div class="social-links">
+          ${s.linkedin  ? `<a href="${esc(s.linkedin)}"  target="_blank" rel="noopener" class="social-link">${svgLinkedIn()}<span>LinkedIn</span></a>`  : ''}
+          ${s.youtube   ? `<a href="${esc(s.youtube)}"   target="_blank" rel="noopener" class="social-link">${svgYouTube()}<span>YouTube</span></a>`   : ''}
+          ${s.instagram ? `<a href="${esc(s.instagram)}" target="_blank" rel="noopener" class="social-link">${svgInstagram()}<span>Instagram</span></a>` : ''}
+        </div>` : ''}
+      </div>
+    </div>`).join('');
+}
+function toggleBio(cardId, btn) {
+  const card = document.getElementById(cardId);
+  card.classList.toggle('expanded');
+  btn.textContent = card.classList.contains('expanded') ? 'Show less' : 'Read more';
+}
+function toggleSpeakerSocials(cardId, btn) {
+  const card = document.getElementById(cardId);
+  card.classList.toggle('socials-open');
+  const open = card.classList.contains('socials-open');
+  btn.innerHTML = open
+    ? '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> Close'
+    : '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg> More info';
+}
+
+function renderWorkshops(workshops) {
+  const el = document.getElementById('workshops-list');
+  if (!workshops.length) { el.innerHTML = emptyState('🗓', 'No workshops found'); return; }
+  // Store data for info popup lookup
+  window._workshopData = {};
+  workshops.forEach(w => { window._workshopData[w.id] = w; });
+
+  const locked = window._selectionsLocked || false;
+  const users = window._allUsersSnap || [];
+
+  // Show/hide lock banner and search
+  const lockBanner = document.getElementById('ws-lock-banner');
+  const searchWrap = document.getElementById('ws-search-wrap');
+  if (lockBanner) lockBanner.style.display = locked ? 'flex' : 'none';
+  if (searchWrap) searchWrap.style.display = locked ? 'none' : 'flex';
+
+  // If locked, only show the chosen workshop (hide others)
+  const visibleWorkshops = locked && window._chosenWorkshop
+    ? workshops.filter(w => w.title === window._chosenWorkshop)
+    : workshops;
+
+  if (!visibleWorkshops.length && locked) {
+    el.innerHTML = emptyState('🔒', 'No workshop selected yet');
+    updateScheduleCount();
+    return;
+  }
+
+  el.innerHTML = visibleWorkshops.map((w, i) => {
+    const sel = userSchedule.includes(w.id);
+    const gradStyle = buildGradientStyle(w.wrapColour);
+    // Count attendees
+    const count = users.filter(u => u.workshop === w.title).length;
+    const maxCap = w.maxCapacity ? parseInt(w.maxCapacity) : null;
+    const isFull = maxCap !== null && count >= maxCap;
+    const isAlmostFull = maxCap !== null && !isFull && count >= maxCap * 0.8;
+    const capClass = isFull ? 'full' : (isAlmostFull ? 'almost-full' : '');
+    const capText = maxCap !== null ? `${count} / ${maxCap}` : `${count} attending`;
+
+    const clickable = !isFull || sel; // full & not selected = not clickable (except to show error)
+
+    return `
+    <div class="item-coloured-wrap" style="${gradStyle}animation-delay:${i*50}ms${isFull && !sel ? ';opacity:.65' : ''}">
+      <div class="workshop-card ${sel?'selected':''}${isFull && !sel?' full-card':''}" id="wcard-${w.id}" style="margin-bottom:0;${isFull && !sel ? 'cursor:not-allowed;' : ''}">
+        <div class="workshop-reg-icon" onclick="toggleWorkshop('${w.id}','${esc(w.title).replace(/'/g,"&#39;")}','wcard-${w.id}')" title="${sel ? 'Deselect' : 'Select'}" style="cursor:pointer;flex-shrink:0;width:36px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;${isFull && !sel ? 'pointer-events:none;' : ''}">
+          ${sel
+            ? '<span style="color:#C9924A;font-size:1.3rem;line-height:1;" title="Registered">✔</span><span style="font-size:.55rem;font-weight:700;color:#C9924A;letter-spacing:.02em;line-height:1.2">Done</span>'
+            : '<span style="color:var(--ink-soft);font-size:1.4rem;font-weight:300;line-height:1;">+</span><span style="font-size:.55rem;font-weight:700;color:var(--ink-soft);letter-spacing:.02em;line-height:1.2">Register</span>'}
+        </div>
+        <div class="workshop-info" style="flex:1">
+          <h3>${esc(w.title)}</h3>
+          <div class="meta">${esc(w.time||'')}${w.location ? ' · ' + esc(w.location) : ''}</div>
+          ${w.category ? `<span class="badge">${esc(w.category)}</span>` : ''}
+          <span class="capacity-badge ${capClass}">${isFull ? '🔴 ' : ''}${capText}</span>
+          <div class="card-error-msg" id="werr-${w.id}"></div>
+        </div>
+        <button class="more-info-btn" onclick="openInfoPopupById('workshop','${w.id}')" style="flex-shrink:0;padding:.3rem .7rem;border-radius:100px;border:1.5px solid var(--peach-deep);background:var(--white);font-size:.75rem;font-weight:600;color:var(--ink-soft);cursor:pointer;transition:all .2s;font-family:'DM Sans',sans-serif;" onmouseover="this.style.borderColor='var(--gold)';this.style.color='var(--gold)'" onmouseout="this.style.borderColor='var(--peach-deep)';this.style.color='var(--ink-soft)'">More info</button>
+      </div>
+    </div>`;
+  }).join('');
+  updateScheduleCount();
+}
+
+function renderCompetitions(comps) {
+  const el = document.getElementById('competitions-list');
+  if (!comps.length) { el.innerHTML = emptyState('🏆', 'No competitions found'); return; }
+  // Store data for info popup lookup
+  window._competitionData = {};
+  comps.forEach(c => { window._competitionData[c.id] = c; });
+
+  const locked = window._selectionsLocked || false;
+  const users = window._allUsersSnap || [];
+
+  // Show/hide lock banner and search
+  const lockBanner = document.getElementById('comp-lock-banner');
+  const searchWrap = document.getElementById('comp-search-wrap');
+  if (lockBanner) lockBanner.style.display = locked ? 'flex' : 'none';
+  if (searchWrap) searchWrap.style.display = locked ? 'none' : 'flex';
+
+  // If locked, only show the chosen competition
+  const visibleComps = locked && window._chosenCompetition
+    ? comps.filter(c => c.title === window._chosenCompetition)
+    : comps;
+
+  if (!visibleComps.length && locked) {
+    el.innerHTML = emptyState('🔒', 'No competition selected yet');
+    return;
+  }
+
+  el.innerHTML = visibleComps.map((c, i) => {
+    const isRegistered = window._chosenCompetition === c.title;
+    const gradStyle = buildGradientStyle(c.wrapColour);
+    // Count attendees
+    const count = users.filter(u => u.competition === c.title).length;
+    const maxCap = c.maxCapacity ? parseInt(c.maxCapacity) : null;
+    const isFull = maxCap !== null && count >= maxCap;
+    const isAlmostFull = maxCap !== null && !isFull && count >= maxCap * 0.8;
+    const capClass = isFull ? 'full' : (isAlmostFull ? 'almost-full' : '');
+    const capText = maxCap !== null ? `${count} / ${maxCap}` : `${count} registered`;
+
+    return `
+    <div class="item-coloured-wrap" style="${gradStyle}animation-delay:${i*60}ms${isFull && !isRegistered ? ';opacity:.65' : ''}">
+      <div class="comp-card" id="comp-${c.id}" style="margin-bottom:0">
+        <div class="comp-header">
+          <div style="display:flex;align-items:center;gap:.6rem;flex:1;min-width:0" onclick="toggleComp('${c.id}')">
+            <div class="comp-reg-icon" onclick="event.stopPropagation();toggleCompetition(event,'${c.id}','${esc(c.title).replace(/'/g,"&#39;")}')" title="${isRegistered ? 'Deregister' : 'Register'}" style="cursor:${isFull && !isRegistered ? 'not-allowed' : 'pointer'};flex-shrink:0;width:36px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;${isFull && !isRegistered ? 'pointer-events:none;' : ''}">
+              ${isRegistered
+                ? '<span style="color:#C9924A;font-size:1.3rem;line-height:1;" title="Registered">✔</span><span style="font-size:.55rem;font-weight:700;color:#C9924A;letter-spacing:.02em;line-height:1.2">Done</span>'
+                : '<span style="color:var(--ink-soft);font-size:1.4rem;font-weight:300;line-height:1;">+</span><span style="font-size:.55rem;font-weight:700;color:var(--ink-soft);letter-spacing:.02em;line-height:1.2">Register</span>'}
+            </div>
+            <div style="flex:1;min-width:0">
+              <h3>${esc(c.title)}</h3>
+              <div style="margin-top:.3rem">
+                ${c.prize  ? `<span class="badge">🏅 ${esc(c.prize)}</span>` : ''}
+                ${c.status === 'open'   ? `<span class="comp-tag open-tag">● Open</span>`   : ''}
+                ${c.status === 'closed' ? `<span class="comp-tag closed-tag">● Closed</span>` : ''}
+                ${c.teamEvent ? `<span class="comp-tag team-tag">👥 Team</span>` : ''}
+                <span class="capacity-badge ${capClass}">${isFull ? '🔴 ' : ''}${capText}</span>
+              </div>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:.4rem;flex-shrink:0">
+            <button class="more-info-btn" onclick="openInfoPopupById('competition','${c.id}')" style="padding:.3rem .7rem;border-radius:100px;border:1.5px solid var(--peach-deep);background:var(--white);font-size:.75rem;font-weight:600;color:var(--ink-soft);cursor:pointer;transition:all .2s;font-family:'DM Sans',sans-serif;" onmouseover="this.style.borderColor='var(--gold)';this.style.color='var(--gold)'" onmouseout="this.style.borderColor='var(--peach-deep)';this.style.color='var(--ink-soft)'">More info</button>
+            <svg class="chevron" onclick="toggleComp('${c.id}')" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="cursor:pointer;flex-shrink:0"><polyline points="6 9 12 15 18 9"/></svg>
+          </div>
+        </div>
+        <div class="comp-body">
+          <div class="comp-body-inner">
+            ${esc(c.description||'')}
+            ${c.deadline ? `<p style="margin-top:.75rem;font-size:.78rem;font-weight:600;color:var(--gold)">⏰ Deadline: ${esc(c.deadline)}</p>` : ''}
+            <div class="card-error-msg" id="cerr-${c.id}"></div>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function toggleCompetition(e, compId, compTitle) {
+  e.stopPropagation();
+  const F = window.__FIU__;
+  const uid = currentUser.uid;
+  const alreadyChosen = window._chosenCompetition;
+
+  // Check if user is registered (paid)
+  if (_currentPaidStatus !== 'yes' && _currentPaidStatus !== 'onSpot' && userRole !== 'admin' && userRole !== 'volunteer') {
+    showCardError('cerr-' + compId, "⛔ Cannot register for workshop/competition. Please register first! To register click on the 'Register' tab in the bottom.");
+    showToast("⛔ Please register first! Tap the 'Register' tab below.");
+    return;
+  }
+
+  // Check lock first
+  if (window._selectionsLocked) {
+    showCardError('cerr-' + compId, '🔒 Changes are LOCKED. you cannot change it.');
+    showToast('🔒 Changes are LOCKED. you cannot change it.');
+    return;
+  }
+
+  if (alreadyChosen === compTitle) {
+    // Deselect
+    window._chosenCompetition = null;
+    try { await F.updateDoc(F.doc(F.db, 'Users', uid), { competition: '' }); } catch(err) { showToast('Sync error'); }
+    renderCompetitions(allCompetitions);
+    showToast('Deregistered from competition');
+    return;
+  }
+
+  if (alreadyChosen && alreadyChosen !== compTitle) {
+    showCardError('cerr-' + compId, '⚠️ Deregister your current competition first.');
+    showToast('⚠️ Limit is 1 competition — deregister your current pick first');
+    return;
+  }
+
+  // Check capacity
+  const comp = allCompetitions.find(c => c.id === compId);
+  if (comp && comp.maxCapacity) {
+    const users = window._allUsersSnap || [];
+    const count = users.filter(u => u.competition === compTitle).length;
+    if (count >= parseInt(comp.maxCapacity)) {
+      showCardError('cerr-' + compId, '🔴 The competition is full. Pick another competition.');
+      showToast('🔴 The competition is full. Pick another competition.');
+      return;
+    }
+  }
+
+  window._chosenCompetition = compTitle;
+  try { await F.updateDoc(F.doc(F.db, 'Users', uid), { competition: compTitle }); } catch(err) { showToast('Sync error'); }
+  renderCompetitions(allCompetitions);
+  showToast('✓ Registered for competition');
+}
+function toggleComp(id) { document.getElementById('comp-' + id).classList.toggle('open'); }
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   ADMIN — LOAD LISTS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+async function loadAdminSpeakers() {
+  if (!isAdmin) return;
+  const F = window.__FIU__;
+  const snap = await F.getDocs(F.collection(F.db, 'Speakers'));
+  const items = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  const el = document.getElementById('admin-speakers-list');
+  el.innerHTML = items.length ? items.map(s => `
+    <div class="admin-item">
+      <div class="admin-item-info"><h4>${esc(s.name)}</h4><p>${esc(s.role||'')}</p></div>
+      <div class="admin-item-actions">
+        <button class="btn btn-ghost btn-sm" onclick='openModal("speaker","${s.id}",${safeJSON(s)})'>Edit</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteItem('Speakers','${s.id}',loadAdminSpeakers)">Del</button>
+      </div>
+    </div>`).join('') : emptyState('', 'No speakers yet');
+}
+async function loadAdminWorkshops() {
+  if (!isAdmin) return;
+  const F = window.__FIU__;
+  const [wsSnap, usersSnap] = await Promise.all([
+    F.getDocs(F.collection(F.db, 'Workshops')),
+    F.getDocs(F.collection(F.db, 'Users'))
+  ]);
+  const items = wsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+  const allUsers = usersSnap.docs.map(d => d.data());
+  const el = document.getElementById('admin-workshops-list');
+  el.innerHTML = items.length ? items.map(w => {
+    const count = allUsers.filter(u => u.workshop === w.title).length;
+    const maxStr = w.maxCapacity ? ` · Max: ${w.maxCapacity}` : '';
+    const countBadge = `<span style="display:inline-flex;align-items:center;gap:.2rem;font-size:.72rem;font-weight:700;padding:.15rem .55rem;border-radius:100px;background:${w.maxCapacity && count >= parseInt(w.maxCapacity) ? '#FEE2E2' : 'var(--peach-mid)'};color:${w.maxCapacity && count >= parseInt(w.maxCapacity) ? '#991B1B' : 'var(--ink-soft)'};border:1px solid ${w.maxCapacity && count >= parseInt(w.maxCapacity) ? '#FECACA' : 'var(--peach-deep)'};margin-left:.3rem">👥 ${count}${w.maxCapacity ? ' / ' + w.maxCapacity : ''}</span>`;
+    return `
+    <div class="admin-item">
+      <div class="admin-item-info">
+        <h4>${esc(w.title)}${countBadge}</h4>
+        <p>${esc(w.time||'')}${w.location?' · '+w.location:''}${maxStr}</p>
+      </div>
+      <div class="admin-item-actions">
+        <button class="btn btn-ghost btn-sm" onclick='openModal("workshop","${w.id}",${safeJSON(w)})'>Edit</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteItem('Workshops','${w.id}',loadAdminWorkshops)">Del</button>
+      </div>
+    </div>`;
+  }).join('') : emptyState('', 'No workshops yet');
+}
+async function loadAdminCompetitions() {
+  if (!isAdmin) return;
+  const F = window.__FIU__;
+  const [compSnap, usersSnap] = await Promise.all([
+    F.getDocs(F.collection(F.db, 'Competitions')),
+    F.getDocs(F.collection(F.db, 'Users'))
+  ]);
+  const items = compSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+  const allUsers = usersSnap.docs.map(d => d.data());
+  const el = document.getElementById('admin-competitions-list');
+  el.innerHTML = items.length ? items.map(c => {
+    const count = allUsers.filter(u => u.competition === c.title).length;
+    const maxStr = c.maxCapacity ? ` · Max: ${c.maxCapacity}` : '';
+    const countBadge = `<span style="display:inline-flex;align-items:center;gap:.2rem;font-size:.72rem;font-weight:700;padding:.15rem .55rem;border-radius:100px;background:${c.maxCapacity && count >= parseInt(c.maxCapacity) ? '#FEE2E2' : 'var(--peach-mid)'};color:${c.maxCapacity && count >= parseInt(c.maxCapacity) ? '#991B1B' : 'var(--ink-soft)'};border:1px solid ${c.maxCapacity && count >= parseInt(c.maxCapacity) ? '#FECACA' : 'var(--peach-deep)'};margin-left:.3rem">👥 ${count}${c.maxCapacity ? ' / ' + c.maxCapacity : ''}</span>`;
+    return `
+    <div class="admin-item">
+      <div class="admin-item-info">
+        <h4>${esc(c.title)}${countBadge}</h4>
+        <p>${esc(c.prize||'')} ${c.status?'· '+c.status:''}${maxStr}</p>
+      </div>
+      <div class="admin-item-actions">
+        <button class="btn btn-ghost btn-sm" onclick='openModal("competition","${c.id}",${safeJSON(c)})'>Edit</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteItem('Competitions','${c.id}',loadAdminCompetitions)">Del</button>
+      </div>
+    </div>`;
+  }).join('') : emptyState('', 'No competitions yet');
+}
+
+async function deleteItem(col, id, reload) {
+  if (!confirm('Permanently delete this item?')) return;
+  const F = window.__FIU__;
+  try {
+    await F.deleteDoc(F.doc(F.db, col, id));
+    showToast('Deleted'); reload();
+  } catch(e) {
+    showToast('Delete failed: ' + e.message);
+  }
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   MODAL
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+function openModal(type, id = null, data = {}) {
+  modalType = type; editId = id;
+  // Store existing speaker photo so it's preserved if no new one is uploaded
+  window._editSpeakerPhoto = (type === 'speaker' && id) ? (data.photoURL || '') : '';
+  document.getElementById('modalTitle').textContent = (id ? 'Edit' : 'Add') + ' ' + capitalise(type);
+
+  const forms = {
+    speaker: `
+      <div class="form-card">
+        <div class="form-group">
+          <label>Speaker Photo</label>
+          <div style="display:flex;align-items:center;gap:1rem;margin-bottom:.5rem;">
+            <div id="img-preview" style="width:64px;height:64px;border-radius:14px;background:var(--peach-mid);border:2px dashed var(--peach-deep);display:flex;align-items:center;justify-content:center;font-size:1.5rem;overflow:hidden;flex-shrink:0;">
+              ${data.photoURL ? '<img src="'+data.photoURL+'" style="width:100%;height:100%;object-fit:cover;border-radius:12px;" />' : '📷'}
+            </div>
+            <div style="flex:1;">
+              <label for="f-photo" style="display:inline-block;padding:.45rem .9rem;border-radius:100px;border:1.5px solid var(--peach-deep);font-size:.8rem;font-weight:600;cursor:pointer;background:var(--white);color:var(--ink-soft);text-transform:none;letter-spacing:0;">Choose Image</label>
+              <input type="file" id="f-photo" accept="image/*" style="display:none" onchange="previewSpeakerImage(this)" />
+              <p style="font-size:.72rem;color:var(--ink-soft);margin-top:.3rem;">JPG, PNG or WEBP · Stored as base64</p>
+            </div>
+          </div>
+          <input type="hidden" id="f-photo-data" value="" />
+        </div>
+        <div class="form-group"><label>Full Name *</label><input id="f-name" value="${esc(data.name||'')}" placeholder="Dr. Jane Smith" /></div>
+        <div class="form-group"><label>Role / Title</label><input id="f-role" value="${esc(data.role||'')}" placeholder="CEO, Innovate Labs" /></div>
+        <div class="form-group"><label>Bio</label><textarea id="f-bio" placeholder="Short biography...">${esc(data.bio||'')}</textarea></div>
+        <div class="form-group"><label>LinkedIn URL</label><input id="f-linkedin" value="${esc(data.linkedin||'')}" placeholder="https://linkedin.com/in/..." /></div>
+        <div class="form-group"><label>YouTube URL</label><input id="f-youtube" value="${esc(data.youtube||'')}" placeholder="https://youtube.com/@..." /></div>
+        <div class="form-group"><label>Instagram URL</label><input id="f-instagram" value="${esc(data.instagram||'')}" placeholder="https://instagram.com/..." /></div>
+      </div>`,
+    workshop: `
+      <div class="form-card">
+        <div class="form-group"><label>Title *</label><input id="f-title" value="${esc(data.title||'')}" placeholder="Workshop title" /></div>
+        <div class="form-group"><label>Time</label><input id="f-time" value="${esc(data.time||'')}" placeholder="10:00 AM – 11:30 AM" /></div>
+        <div class="form-group"><label>Location / Room</label><input id="f-location" value="${esc(data.location||'')}" placeholder="Hall A / Room 3" /></div>
+        <div class="form-group"><label>Category</label><input id="f-category" value="${esc(data.category||'')}" placeholder="Tech / Design / Business…" /></div>
+        <div class="form-group"><label>Description</label><textarea id="f-desc" placeholder="What will attendees learn?">${esc(data.description||'')}</textarea></div>
+        <div class="form-group"><label>Speaker Name</label><input id="f-speaker" value="${esc(data.speaker||'')}" placeholder="Presenter name (optional)" /></div>
+        <div class="form-group"><label>Google Doc URL</label><input id="f-gdoc" value="${esc(data.gdocUrl||'')}" placeholder="https://docs.google.com/…" /></div>
+        <div class="form-group"><label>Max Capacity</label><input id="f-maxcap" type="number" min="1" value="${esc(data.maxCapacity||'')}" placeholder="Leave blank for unlimited" /></div>
+        ${buildColourPickerHTML('f-colour', data.wrapColour||'')}
+      </div>`,
+    competition: `
+      <div class="form-card">
+        <div class="form-group"><label>Title *</label><input id="f-title" value="${esc(data.title||'')}" placeholder="Competition name" /></div>
+        <div class="form-group"><label>Prize / Reward</label><input id="f-prize" value="${esc(data.prize||'')}" placeholder="$1,000 cash prize" /></div>
+        <div class="form-group"><label>Status</label>
+          <select id="f-status">
+            <option value="" ${!data.status?'selected':''}>— Select —</option>
+            <option value="open"   ${data.status==='open'?'selected':''}>Open</option>
+            <option value="closed" ${data.status==='closed'?'selected':''}>Closed</option>
+          </select>
+        </div>
+        <div class="form-group"><label>Deadline</label><input id="f-deadline" value="${esc(data.deadline||'')}" placeholder="e.g. 15 June 2025" /></div>
+        <div class="form-group" style="display:flex;align-items:center;gap:.5rem">
+          <input type="checkbox" id="f-team" ${data.teamEvent?'checked':''} style="width:18px;height:18px;accent-color:var(--gold)" />
+          <label for="f-team" style="text-transform:none;font-size:.88rem;font-weight:500">Team-based competition</label>
+        </div>
+        <div class="form-group"><label>Description *</label><textarea id="f-desc" placeholder="Rules, eligibility, judging criteria…">${esc(data.description||'')}</textarea></div>
+        <div class="form-group"><label>Google Doc URL</label><input id="f-gdoc" value="${esc(data.gdocUrl||'')}" placeholder="https://docs.google.com/…" /></div>
+        <div class="form-group"><label>Max Capacity</label><input id="f-maxcap" type="number" min="1" value="${esc(data.maxCapacity||'')}" placeholder="Leave blank for unlimited" /></div>
+        ${buildColourPickerHTML('f-colour', data.wrapColour||'')}
+      </div>`
+  };
+
+  document.getElementById('modalBody').innerHTML = forms[type] || '';
+  document.getElementById('modalOverlay').classList.add('open');
+}
+function closeModal() { document.getElementById('modalOverlay').classList.remove('open'); modalType = null; editId = null; }
+
+async function saveModal() {
+  const F = window.__FIU__;
+  let payload = {};
+
+  try {
+    if (modalType === 'speaker') {
+      const name = document.getElementById('f-name').value.trim();
+      if (!name) { showToast('Name is required'); return; }
+      const photoEl = document.getElementById('f-photo-data');
+      const photoData = photoEl ? photoEl.value : '';
+      payload = { name, role: v('f-role'), bio: v('f-bio'), linkedin: v('f-linkedin'), youtube: v('f-youtube'), instagram: v('f-instagram'), updatedAt: F.serverTimestamp() };
+      if (photoData) payload.photoURL = photoData;
+      else if (editId && window._editSpeakerPhoto) payload.photoURL = window._editSpeakerPhoto;
+      await saveDoc('Speakers', payload); loadAdminSpeakers();
+
+    } else if (modalType === 'workshop') {
+      const title = document.getElementById('f-title').value.trim();
+      if (!title) { showToast('Title is required'); return; }
+      payload = { title, time: v('f-time'), location: v('f-location'), category: v('f-category'), description: v('f-desc'), speaker: v('f-speaker'), gdocUrl: v('f-gdoc'), wrapColour: v('f-colour'), updatedAt: F.serverTimestamp() };
+      const maxCapEl = document.getElementById('f-maxcap');
+      if (maxCapEl && maxCapEl.value.trim()) payload.maxCapacity = parseInt(maxCapEl.value.trim()) || null;
+      else payload.maxCapacity = null;
+      await saveDoc('Workshops', payload); loadAdminWorkshops();
+
+    } else if (modalType === 'competition') {
+      const title = document.getElementById('f-title').value.trim();
+      if (!title) { showToast('Title is required'); return; }
+      const teamCheck = document.getElementById('f-team');
+      payload = { title, prize: v('f-prize'), status: v('f-status'), deadline: v('f-deadline'), teamEvent: teamCheck ? teamCheck.checked : false, description: v('f-desc'), gdocUrl: v('f-gdoc'), wrapColour: v('f-colour'), updatedAt: F.serverTimestamp() };
+      const maxCapElC = document.getElementById('f-maxcap');
+      if (maxCapElC && maxCapElC.value.trim()) payload.maxCapacity = parseInt(maxCapElC.value.trim()) || null;
+      else payload.maxCapacity = null;
+      await saveDoc('Competitions', payload); loadAdminCompetitions();
+    }
+
+    closeModal(); showToast('Saved ✓');
+  } catch(e) {
+    showToast('Save failed: ' + e.message);
+  }
+}
+
+async function saveDoc(col, payload) {
+  const F = window.__FIU__;
+  if (editId) { await F.updateDoc(F.doc(F.db, col, editId), payload); }
+  else { payload.createdAt = F.serverTimestamp(); await F.addDoc(F.collection(F.db, col), payload); }
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   LOCK MODE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+window._selectionsLocked = false;
+
+function handleLockToggle(enabled) {
+  window._selectionsLocked = enabled;
+  const F = window.__FIU__;
+  if (F && currentUser) {
+    F.setDoc(F.doc(F.db, 'AppSettings', 'lock'), { enabled }, { merge: true }).catch(() => {});
+  }
+  // Re-render to show/hide items
+  if (allWorkshops.length) renderWorkshops(allWorkshops);
+  if (allCompetitions.length) renderCompetitions(allCompetitions);
+}
+
+async function loadLockSetting() {
+  const F = window.__FIU__;
+  try {
+    const snap = await F.getDoc(F.doc(F.db, 'AppSettings', 'lock'));
+    if (snap.exists()) {
+      window._selectionsLocked = snap.data().enabled || false;
+    }
+    const toggle = document.getElementById('lockToggle');
+    if (toggle) toggle.checked = window._selectionsLocked;
+    // Start real-time listener for lock changes
+    const u = F.onSnapshot(F.doc(F.db, 'AppSettings', 'lock'), lockSnap => {
+      const wasLocked = window._selectionsLocked;
+      window._selectionsLocked = lockSnap.exists() ? (lockSnap.data().enabled || false) : false;
+      const toggle2 = document.getElementById('lockToggle');
+      if (toggle2) toggle2.checked = window._selectionsLocked;
+      if (wasLocked !== window._selectionsLocked) {
+        if (allWorkshops.length) renderWorkshops(allWorkshops);
+        if (allCompetitions.length) renderCompetitions(allCompetitions);
+      }
+    }, () => {});
+    unsubs.push(u);
+  } catch(e) {}
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   MAINTENANCE MODE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+window._maintenanceOn = false;
+
+function applyMaintenance(enabled) {
+  // Only show overlay for attendees — admins & volunteers see everything normally
+  const isPrivileged = (userRole === 'admin' || userRole === 'volunteer');
+  const show = enabled && !isPrivileged;
+  ['maint-speakers', 'maint-workshops', 'maint-competitions', 'maint-schedule'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.classList.toggle('active', show);
+  });
+}
+
+function handleMaintenanceToggle(enabled) {
+  window._maintenanceOn = enabled;
+  const F = window.__FIU__;
+  if (F && currentUser) {
+    F.setDoc(F.doc(F.db, 'AppSettings', 'maintenance'), { enabled }, { merge: true }).catch(() => {});
+  }
+  applyMaintenance(enabled);
+}
+
+async function loadMaintenanceSetting() {
+  const F = window.__FIU__;
+  try {
+    const snap = await F.getDoc(F.doc(F.db, 'AppSettings', 'maintenance'));
+    if (snap.exists()) {
+      window._maintenanceOn = snap.data().enabled || false;
+    }
+    const toggle = document.getElementById('maintenanceToggle');
+    if (toggle) toggle.checked = window._maintenanceOn;
+    applyMaintenance(window._maintenanceOn);
+    // Real-time listener so all clients update instantly
+    const u = F.onSnapshot(F.doc(F.db, 'AppSettings', 'maintenance'), mSnap => {
+      const prev = window._maintenanceOn;
+      window._maintenanceOn = mSnap.exists() ? (mSnap.data().enabled || false) : false;
+      const toggle2 = document.getElementById('maintenanceToggle');
+      if (toggle2) toggle2.checked = window._maintenanceOn;
+      if (prev !== window._maintenanceOn) applyMaintenance(window._maintenanceOn);
+    }, () => {});
+    unsubs.push(u);
+  } catch(e) {}
+}
+
+
+function toggleKebab(id) {
+  const menu = document.getElementById(id);
+  if (!menu) return;
+  const isOpen = menu.classList.contains('open');
+  // Close all open kebabs first
+  document.querySelectorAll('.kebab-menu.open').forEach(m => m.classList.remove('open'));
+  if (!isOpen) menu.classList.add('open');
+}
+// Close kebabs when clicking outside
+document.addEventListener('click', e => {
+  if (!e.target.closest('.kebab-wrap')) {
+    document.querySelectorAll('.kebab-menu.open').forEach(m => m.classList.remove('open'));
+  }
+});
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   INFO POPUP
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+function openInfoPopupById(type, id) {
+  let item;
+  if (type === 'workshop')    item = (window._workshopData    || {})[id];
+  if (type === 'competition') item = (window._competitionData || {})[id];
+  if (!item) { showToast('Could not load info'); return; }
+  openInfoPopup(type, item);
+}
+
+function openInfoPopup(type, item) {
+  // Accept either a raw object or a JSON string (legacy)
+  if (typeof item === 'string') {
+    try { item = JSON.parse(item); } catch(e) { showToast('Could not load info'); return; }
+  }
+
+  document.getElementById('infoPopupTitle').textContent = item.title || 'More Info';
+  const body = document.getElementById('infoPopupBody');
+
+  const row = (icon, label, val) => val
+    ? `<div class="info-popup-row"><span class="info-label">${label}</span><span>${icon} ${esc(val)}</span></div>`
+    : '';
+
+  let content = `<div style="margin-bottom:1rem">`;
+
+  if (type === 'workshop') {
+    content += row('🕐','Time', item.time);
+    content += row('📍','Location', item.location);
+    content += row('🏷️','Category', item.category);
+    content += row('🎤','Speaker', item.speaker);
+    if (item.description) {
+      content += `<div style="margin-top:.85rem;padding:.85rem;background:var(--peach);border-radius:12px;font-size:.85rem;color:var(--ink);line-height:1.6;border:1px solid var(--peach-deep)">${esc(item.description)}</div>`;
+    }
+  } else if (type === 'competition') {
+    content += row('🏅','Prize', item.prize);
+    content += row('📅','Deadline', item.deadline);
+    content += row('📊','Status', item.status ? (item.status.charAt(0).toUpperCase()+item.status.slice(1)) : null);
+    if (item.teamEvent) content += `<div class="info-popup-row"><span class="info-label">Format</span><span>👥 Team-based</span></div>`;
+    if (item.description) {
+      content += `<div style="margin-top:.85rem;padding:.85rem;background:var(--peach);border-radius:12px;font-size:.85rem;color:var(--ink);line-height:1.6;border:1px solid var(--peach-deep)">${esc(item.description)}</div>`;
+    }
+  }
+
+  content += `</div>`;
+
+  // Google Doc button
+  const gdocUrl = item.gdocUrl || item.docUrl || item.googleDoc || '';
+  content += `<p style="font-size:.75rem;font-weight:700;color:var(--ink-soft);letter-spacing:.04em;text-transform:uppercase;margin-bottom:.5rem">Read more below</p>`;
+  if (gdocUrl) {
+    content += `<a href="${esc(gdocUrl)}" target="_blank" rel="noopener" class="info-popup-gdoc-btn">📄 Open Google Doc</a>`;
+  } else {
+    content += `<button class="info-popup-gdoc-btn" style="opacity:.45;cursor:default" disabled>📄 No Doc Linked Yet</button>`;
+  }
+
+  body.innerHTML = content;
+  document.getElementById('infoPopupOverlay').classList.add('open');
+}
+function closeInfoPopup() {
+  document.getElementById('infoPopupOverlay').classList.remove('open');
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   DARK MODE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+function applyDarkMode(enabled, save = true) {
+  document.body.classList.toggle('dark-mode', enabled);
+  const toggle = document.getElementById('darkModeToggle');
+  if (toggle) toggle.checked = enabled;
+  const icon = document.getElementById('dmIcon');
+  if (icon) icon.textContent = enabled ? '☀️' : '🌙';
+  if (save && currentUser) {
+    const F = window.__FIU__;
+    F.updateDoc(F.doc(F.db, 'Users', currentUser.uid), { darkMode: enabled }).catch(() => {});
+  }
+}
+function handleDarkModeToggle(checked) {
+  applyDarkMode(checked, true);
+  setTimeout(() => {
+    if (allWorkshops.length) renderWorkshops(allWorkshops);
+    if (allCompetitions.length) renderCompetitions(allCompetitions);
+  }, 50);
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   ADD TO HOMESCREEN
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+function openA2HS() {
+  // Reset state
+  document.getElementById('a2hs-ios-btn').classList.remove('selected');
+  document.getElementById('a2hs-android-btn').classList.remove('selected');
+  document.getElementById('a2hs-ios-steps').classList.remove('visible');
+  document.getElementById('a2hs-android-steps').classList.remove('visible');
+  document.getElementById('a2hsOverlay').classList.add('open');
+}
+function closeA2HS() {
+  document.getElementById('a2hsOverlay').classList.remove('open');
+}
+function selectA2HSPlatform(platform) {
+  document.getElementById('a2hs-ios-btn').classList.toggle('selected', platform === 'ios');
+  document.getElementById('a2hs-android-btn').classList.toggle('selected', platform === 'android');
+  document.getElementById('a2hs-ios-steps').classList.toggle('visible', platform === 'ios');
+  document.getElementById('a2hs-android-steps').classList.toggle('visible', platform === 'android');
+}
+function selectIOSVersion(version) {
+  document.getElementById('ios26btn').classList.toggle('active', version === 'new');
+  document.getElementById('iosOldBtn').classList.toggle('active', version === 'old');
+  document.getElementById('a2hs-ios-new').style.display = version === 'new' ? 'block' : 'none';
+  document.getElementById('a2hs-ios-old').style.display = version === 'old' ? 'block' : 'none';
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   UTILITIES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+function previewSpeakerImage(input) {
+  const file = input.files[0];
+  if (!file) return;
+  if (file.size > 2.5 * 1024 * 1024) { showToast('Image too large — max 2MB'); input.value = ''; return; }
+  const reader = new FileReader();
+  reader.onload = e => {
+    const dataUrl = e.target.result;
+    const preview = document.getElementById('img-preview');
+    if (preview) preview.innerHTML = '<img src="' + dataUrl + '" style="width:100%;height:100%;object-fit:cover;border-radius:12px;" />';
+    const hidden = document.getElementById('f-photo-data');
+    if (hidden) hidden.value = dataUrl;
+  };
+  reader.readAsDataURL(file);
+}
+
+function v(id)  { const el = document.getElementById(id); return el ? el.value.trim() : ''; }
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function capitalise(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
+function emptyState(icon, msg) { return `<div class="empty"><div class="icon">${icon}</div><p>${msg}</p></div>`; }
+function safeJSON(obj) {
+  const clean = Object.fromEntries(Object.entries(obj).filter(([,v]) => typeof v !== 'object' || v === null));
+  return JSON.stringify(clean).replace(/'/g,"&#39;").replace(/\//g,"\\/");
+}
+function skeletonCards(n) {
+  return Array.from({length:n}, () => `
+    <div class="skel-card">
+      <div class="skeleton skel-avatar"></div>
+      <div style="flex:1">
+        <div class="skeleton skel-line med"></div>
+        <div class="skeleton skel-line short"></div>
+        <div class="skeleton skel-line full"></div>
+        <div class="skeleton skel-line med"></div>
+      </div>
+    </div>`).join('');
+}
+
+let toastTimer;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2600);
+}
+
+/* ── Social SVGs ── */
+function svgLinkedIn()  { return `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg>`; }
+function svgYouTube()   { return `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M22.54 6.42a2.78 2.78 0 0 0-1.95-1.96C18.88 4 12 4 12 4s-6.88 0-8.59.46A2.78 2.78 0 0 0 1.46 6.42 29 29 0 0 0 1 12a29 29 0 0 0 .46 5.58 2.78 2.78 0 0 0 1.95 1.96C5.12 20 12 20 12 20s6.88 0 8.59-.46a2.78 2.78 0 0 0 1.96-1.96A29 29 0 0 0 23 12a29 29 0 0 0-.46-5.58z"/><polygon points="9.75 15.02 15.5 12 9.75 8.98 9.75 15.02" fill="white"/></svg>`; }
+function svgInstagram() { return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><circle cx="12" cy="12" r="5" stroke="currentColor"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>`; }
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   SCHEDULE PAGE — PUBLIC VIEW
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+const SCHED_CAT_META = {
+  speaker:     { label: 'Speaker',     emoji: '🎤', pill: 'cat-pill-speaker',     dot: 'cat-speaker' },
+  workshop:    { label: 'Workshop',    emoji: '🛠',  pill: 'cat-pill-workshop',    dot: 'cat-workshop' },
+  competition: { label: 'Competition', emoji: '🏆', pill: 'cat-pill-competition', dot: 'cat-competition' },
+  lunch:       { label: 'Lunch',       emoji: '🍽',  pill: 'cat-pill-lunch',       dot: 'cat-lunch' },
+  break:       { label: 'Break',       emoji: '☕', pill: 'cat-pill-break',       dot: 'cat-break' },
+  ceremony:    { label: 'Ceremony',    emoji: '🎊', pill: 'cat-pill-ceremony',    dot: 'cat-ceremony' },
+  networking:  { label: 'Networking',  emoji: '🤝', pill: 'cat-pill-networking',  dot: 'cat-networking' },
+  general:     { label: 'General',     emoji: '🌟', pill: 'cat-pill-general',     dot: 'cat-general' },
+};
+
+function listenSchedule() {
+  const F = window.__FIU__;
+  const el = document.getElementById('schedule-day-list');
+  const unsub = F.onSnapshot(F.collection(F.db, 'Schedule'), snap => {
+    const items = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    // Sort by startTime string (HH:MM)
+    items.sort((a, b) => (a.startTime || '').localeCompare(b.startTime || ''));
+    renderSchedulePage(items, el);
+  }, err => {
+    el.innerHTML = emptyState('⚠️', 'Failed to load schedule: ' + err.message);
+  });
+  unsubs.push(unsub);
+}
+
+function fmt12(t) {
+  if (!t) return '';
+  const [h, m] = t.split(':').map(Number);
+  const ampm = h >= 12 ? 'PM' : 'AM';
+  const h12 = h % 12 || 12;
+  return `${h12}:${String(m).padStart(2,'0')} ${ampm}`;
+}
+
+function renderSchedulePage(items, el) {
+  if (!items.length) {
+    el.innerHTML = emptyState('📅', 'No schedule items yet');
+    return;
+  }
+  el.innerHTML = `<div class="schedule-timeline">` +
+    items.map((item, i) => {
+      const meta = SCHED_CAT_META[item.category] || SCHED_CAT_META.general;
+      const timeStr = fmt12(item.startTime) + (item.endTime ? ` – ${fmt12(item.endTime)}` : '');
+      const isLast = i === items.length - 1;
+      return `
+        <div class="schedule-slot">
+          <div class="schedule-slot-time">${esc(timeStr)}</div>
+          <div class="schedule-slot-line">
+            <div class="schedule-dot ${meta.dot}"></div>
+            ${!isLast ? '<div class="schedule-line-seg"></div>' : ''}
+          </div>
+          <div class="schedule-card">
+            <div class="schedule-card-top">
+              <h4>${meta.emoji} ${esc(item.title)}</h4>
+              <span class="schedule-cat-pill ${meta.pill}">${esc(meta.label)}</span>
+            </div>
+            ${item.location ? `<p class="sc-desc">📍 ${esc(item.location)}</p>` : ''}
+            ${item.description ? `<p class="sc-desc">${esc(item.description)}</p>` : ''}
+          </div>
+        </div>`;
+    }).join('') + `</div>`;
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   SCHEDULE ADMIN
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+let _editingSchedId = null;
+
+function loadAdminSchedule() {
+  if (!isAdmin) return;
+  const F = window.__FIU__;
+  const el = document.getElementById('admin-schedule-list');
+  el.innerHTML = '<div class="loader"><div class="spinner"></div></div>';
+
+  F.getDocs(F.collection(F.db, 'Schedule')).then(snap => {
+    const items = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    items.sort((a, b) => (a.startTime || '').localeCompare(b.startTime || ''));
+    if (!items.length) { el.innerHTML = emptyState('📅', 'No schedule items yet'); return; }
+    el.innerHTML = items.map(item => {
+      const meta = SCHED_CAT_META[item.category] || SCHED_CAT_META.general;
+      const timeStr = fmt12(item.startTime) + (item.endTime ? ` – ${fmt12(item.endTime)}` : '');
+      return `
+        <div class="sched-admin-card">
+          <div class="sac-info">
+            <h4>${meta.emoji} ${esc(item.title)}</h4>
+            <p>${esc(timeStr)} · <span class="schedule-cat-pill ${meta.pill}" style="font-size:.6rem">${esc(meta.label)}</span>${item.location ? ' · 📍 ' + esc(item.location) : ''}</p>
+          </div>
+          <div style="display:flex;gap:.4rem;flex-shrink:0">
+            <button class="btn btn-ghost btn-sm" onclick="editScheduleItem('${item.id}')">✏️</button>
+            <button class="btn btn-sm" style="background:#FEE2E2;color:#991B1B;border:1.5px solid #FECACA" onclick="deleteScheduleItem('${item.id}')">🗑</button>
+          </div>
+        </div>`;
+    }).join('');
+  }).catch(err => {
+    el.innerHTML = emptyState('⚠️', 'Error: ' + err.message);
+  });
+}
+
+function openScheduleItemModal(id) {
+  _editingSchedId = id || null;
+  document.getElementById('schedItemModalTitle').textContent = id ? 'Edit Schedule Item' : 'Add Schedule Item';
+  if (!id) {
+    document.getElementById('si-title').value = '';
+    document.getElementById('si-category').value = 'general';
+    document.getElementById('si-start').value = '';
+    document.getElementById('si-end').value = '';
+    document.getElementById('si-location').value = '';
+    document.getElementById('si-desc').value = '';
+  }
+  document.getElementById('schedItemOverlay').classList.add('open');
+}
+
+function closeScheduleItemModal() {
+  document.getElementById('schedItemOverlay').classList.remove('open');
+  _editingSchedId = null;
+}
+
+async function editScheduleItem(id) {
+  const F = window.__FIU__;
+  try {
+    const snap = await F.getDoc(F.doc(F.db, 'Schedule', id));
+    if (!snap.exists()) return;
+    const d = snap.data();
+    document.getElementById('si-title').value    = d.title || '';
+    document.getElementById('si-category').value = d.category || 'general';
+    document.getElementById('si-start').value    = d.startTime || '';
+    document.getElementById('si-end').value      = d.endTime || '';
+    document.getElementById('si-location').value = d.location || '';
+    document.getElementById('si-desc').value     = d.description || '';
+    openScheduleItemModal(id);
+  } catch(e) { showToast('Error: ' + e.message); }
+}
+
+async function saveScheduleItem() {
+  const F = window.__FIU__;
+  const title    = document.getElementById('si-title').value.trim();
+  const category = document.getElementById('si-category').value;
+  const start    = document.getElementById('si-start').value;
+  const end      = document.getElementById('si-end').value;
+  const location = document.getElementById('si-location').value.trim();
+  const desc     = document.getElementById('si-desc').value.trim();
+
+  if (!title)  { showToast('Please enter a title'); return; }
+  if (!start)  { showToast('Please set a start time'); return; }
+
+  const data = { title, category, startTime: start, endTime: end, location, description: desc, updatedAt: F.serverTimestamp() };
+
+  try {
+    if (_editingSchedId) {
+      await F.updateDoc(F.doc(F.db, 'Schedule', _editingSchedId), data);
+      showToast('✓ Schedule item updated');
+    } else {
+      await F.addDoc(F.collection(F.db, 'Schedule'), { ...data, createdAt: F.serverTimestamp() });
+      showToast('✓ Schedule item added');
+    }
+    closeScheduleItemModal();
+    loadAdminSchedule();
+  } catch(e) { showToast('Error: ' + e.message); }
+}
+
+async function deleteScheduleItem(id) {
+  if (!confirm('Delete this schedule item?')) return;
+  const F = window.__FIU__;
+  try {
+    await F.deleteDoc(F.doc(F.db, 'Schedule', id));
+    showToast('🗑 Deleted');
+    loadAdminSchedule();
+  } catch(e) { showToast('Error: ' + e.message); }
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   COLOUR PICKER
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+const COLOUR_PRESETS = [
+  '#C9924A','#F59E0B','#EF4444','#EC4899',
+  '#8B5CF6','#3B82F6','#06B6D4','#10B981',
+  '#84CC16','#F97316','#6366F1','#14B8A6',
+  '#E879F9','#FB7185','#34D399','#FBBF24'
+];
+
+function buildColourPickerHTML(inputId, currentVal) {
+  const swatches = COLOUR_PRESETS.map(c => {
+    const active = currentVal && currentVal.toLowerCase() === c.toLowerCase() ? 'active' : '';
+    return `<div class="colour-swatch ${active}" style="background:${c}" onclick="selectColourSwatch(this,'${c}','${inputId}')" title="${c}"></div>`;
+  }).join('');
+  const safeVal = esc(currentVal || '');
+  return `
+    <div class="colour-picker-wrap">
+      <div class="colour-picker-label">🎨 Wrap Colour</div>
+      <div class="colour-swatches">${swatches}</div>
+      <div class="colour-hex-row">
+        <input type="text" class="colour-hex-input" id="${inputId}" value="${safeVal}"
+          placeholder="#C9924A or leave blank"
+          oninput="onColourHexInput(this)"
+          onblur="onColourHexBlur(this)" />
+        <div class="colour-hex-preview" id="${inputId}-preview"
+          style="background:${currentVal||'var(--peach-mid)'}"></div>
+        <input type="color" class="colour-picker-native" id="${inputId}-native"
+          value="${currentVal && currentVal.match(/^#[0-9a-fA-F]{6}$/) ? currentVal : '#C9924A'}"
+          oninput="onNativeColourPick(this,'${inputId}')" title="Pick colour" />
+      </div>
+    </div>`;
+}
+
+function selectColourSwatch(el, colour, inputId) {
+  // Deselect all swatches in the same picker
+  el.closest('.colour-swatches').querySelectorAll('.colour-swatch').forEach(s => s.classList.remove('active'));
+  el.classList.add('active');
+  const input = document.getElementById(inputId);
+  if (input) input.value = colour;
+  const preview = document.getElementById(inputId + '-preview');
+  if (preview) preview.style.background = colour;
+  const native = document.getElementById(inputId + '-native');
+  if (native) native.value = colour;
+}
+
+function onColourHexInput(input) {
+  const val = input.value.trim();
+  const preview = document.getElementById(input.id + '-preview');
+  // Test valid hex
+  if (/^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(val)) {
+    if (preview) preview.style.background = val;
+    const native = document.getElementById(input.id + '-native');
+    if (native && /^#[0-9a-fA-F]{6}$/.test(val)) native.value = val;
+    // Sync swatches
+    input.closest('.colour-picker-wrap').querySelectorAll('.colour-swatch').forEach(s => {
+      s.classList.toggle('active', s.style.background === val || s.title.toLowerCase() === val.toLowerCase());
+    });
+  } else if (!val) {
+    if (preview) preview.style.background = 'var(--peach-mid)';
+  }
+}
+
+function onColourHexBlur(input) {
+  const val = input.value.trim();
+  // Auto-prepend # if missing
+  if (val && !val.startsWith('#') && /^[0-9a-fA-F]{3,6}$/.test(val)) {
+    input.value = '#' + val;
+    onColourHexInput(input);
+  }
+}
+
+function onNativeColourPick(nativeInput, inputId) {
+  const colour = nativeInput.value;
+  const textInput = document.getElementById(inputId);
+  if (textInput) { textInput.value = colour; onColourHexInput(textInput); }
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   GRADIENT STYLE BUILDER
+   Dark mode: colour → black
+   Light mode: colour → white
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+function buildGradientStyle(colour) {
+  if (!colour || !colour.trim()) return '';
+  const c = colour.trim();
+  const isDark = document.body.classList.contains('dark-mode');
+  const endpoint = isDark ? '#000000' : '#FFFFFF';
+  return `background: linear-gradient(135deg, ${c}, ${endpoint}); padding: 2px; border-radius: 20px; `;
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   ADMIN — ON SPOT TAB
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+let onSpotUnsub = null;
+function loadAdminOnSpot() {
+  if (!isAdmin) return;
+  const F = window.__FIU__;
+  const el = document.getElementById('admin-onspot-list');
+  const countBadge = document.getElementById('admin-onspot-count');
+  el.innerHTML = '<div class="loader"><div class="spinner"></div></div>';
+
+  if (onSpotUnsub) { onSpotUnsub(); onSpotUnsub = null; }
+
+  onSpotUnsub = F.onSnapshot(F.collection(F.db, 'Users'), snap => {
+    const onSpotUsers = snap.docs
+      .map(d => ({ uid: d.id, ...d.data() }))
+      .filter(u => u.paid === 'onSpot');
+
+    // Update count badge
+    if (onSpotUsers.length) {
+      countBadge.style.display = 'inline-flex';
+      document.getElementById('onspot-count-num').textContent = onSpotUsers.length;
+    } else {
+      countBadge.style.display = 'none';
+    }
+
+    if (!onSpotUsers.length) {
+      el.innerHTML = emptyState('💵', 'No on-spot attendees yet');
+      return;
+    }
+
+    el.innerHTML = onSpotUsers.map(u => {
+      const initials = (u.name || u.email || '?').split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
+      const avatarEl = u.photoURL
+        ? `<img class="onspot-user-avatar" src="${esc(u.photoURL)}" alt="${esc(u.name||'')}" />`
+        : `<div class="onspot-user-initials">${esc(initials)}</div>`;
+      return `
+        <div class="onspot-user-card">
+          ${avatarEl}
+          <div class="onspot-user-info">
+            <h4>${esc(u.name || '—')}</h4>
+            <p>${esc(u.email || '—')}</p>
+          </div>
+        </div>`;
+    }).join('');
+  }, err => {
+    el.innerHTML = emptyState('⚠️', 'Failed to load: ' + err.message);
+  });
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   QR PAGE — PAY IN ADVANCE BUTTON
+   Shown when paid = 'onSpot'
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+// Track current paid status for QR page
+let _currentPaidStatus = null;
+
+function openPayAdvanceFromQR() {
+  // Open the payment modal directly on step 2 (paid-in-advance form)
+  document.getElementById('payStep1').style.display = 'none';
+  document.getElementById('payStep2').style.display = 'block';
+  document.getElementById('paymentModalTitle').textContent = 'Pay in Advance';
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('payDate').value = today;
+  document.getElementById('payFullName').value = '';
+  document.getElementById('paymentOverlay').classList.add('open');
+}
+</script>
+</body>
+</html>
